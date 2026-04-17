@@ -535,7 +535,7 @@
             title: "全栈工程师",                          // 你的职位头衔
             summary: "5年全栈开发经验，熟悉 React、Node.js、Python 技术栈，擅长从 0 到 1 搭建 Web 应用与后端服务。注重代码质量与用户体验，有丰富的团队协作和项目管理经验。",
             tags: ["React", "Node.js", "Python", "TypeScript", "Docker", "AWS", "CI/CD"],
-            email: "your-email@example.com",
+            email: "wangwalterhandsome@gmail.com",
             phone: "138-0000-0000",
             github: "https://github.com/WalterHandsome",
             linkedin: "",                                  // 留空则不显示
@@ -620,6 +620,20 @@
             {
                 tabName: "开源项目",
                 items: [
+                    {
+                        name: "Tech Learning & Projects",
+                        tech: ["AI Agent", "LangGraph", "CrewAI", "MCP", "Python"],
+                        desc: "AI Agent 技术学习笔记与实战项目集合，涵盖 Agentic 设计模式、Agent 协议（MCP/A2A）、主流框架（LangGraph/CrewAI/OpenAI SDK）等完整知识体系，配套多个可运行的 Demo 项目。",
+                        result: "系统化整理 AI Agent 全栈知识，包含 LangGraph MCP Agent 和 CrewAI 多 Agent 协作两个完整实战项目",
+                        link: "https://github.com/WalterHandsome/tech-learning-and-projects"
+                    },
+                    {
+                        name: "Portfolio 个人简历网站",
+                        tech: ["HTML", "CSS", "JavaScript", "GitHub Pages"],
+                        desc: "纯前端个人简历网站，支持深色模式、响应式布局、打印导出、博客系统、访问统计。",
+                        result: "零依赖单文件实现，一键部署到 GitHub Pages",
+                        link: "https://github.com/WalterHandsome/portfolio"
+                    },
                     {
                         name: "轻量级状态管理库",
                         tech: ["TypeScript", "Proxy", "npm"],
@@ -825,6 +839,7 @@
                 <div class="project-tech">${it.tech.map(t => `<span class="badge">${t}</span>`).join('')}</div>
                 <p class="project-desc">${it.desc}</p>
                 <p class="project-result">${it.result}</p>
+                ${it.link ? `<a href="${it.link}" target="_blank" rel="noopener" class="btn btn-outline" style="padding:4px 14px;font-size:12px;margin-top:4px">查看项目 →</a>` : ''}
             </div>
         `).join('')}</div>`;
     }

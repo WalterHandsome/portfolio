@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="个人博客 - 技术文章与学习笔记">
+    <meta property="og:title" content="个人博客">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+    <title>博客</title>
+    <style>
+        /* ========== 基础重置 & 设计令牌（与简历页一致）========== */
+        * {
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+        }
+        :root {
+            --primary: #165DFF; --primary-light: #4080FF;
+            --primary-gradient: linear-gradient(135deg, #165DFF 0%, #4080FF 100%);
+            --secondary: #36CFC9;
+            --text-primary: #1D2129; --text-secondary: #4E5969; --text-tertiary: #86909C;
+            --bg-primary: #FFFFFF; --bg-secondary: #F7F8FA;
+            --card-bg: #FFFFFF;
+            --card-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --border-color: #E5E6EB;
+            --badge-bg: #E8F3FF; --badge-text: #165DFF;
+            --transition: all 0.25s ease;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #4080FF; --primary-light: #699DFF;
+                --primary-gradient: linear-gradient(135deg, #4080FF 0%, #699DFF 100%);
+                --text-primary: #F7F8FA; --text-secondary: #C9CDD4; --text-tertiary: #86909C;
+                --bg-primary: #17191E; --bg-secondary: #232529;
+                --card-bg: #232529;
+                --card-shadow: 0 2px 12px rgba(0,0,0,0.3);
+                --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+                --border-color: #2E3035;
+                --badge-bg: #1A3366; --badge-text: #699DFF;
+            }
+        }
+        [data-theme="dark"] {
+            --primary: #4080FF; --primary-light: #699DFF;
+            --primary-gradient: linear-gradient(135deg, #4080FF 0%, #699DFF 100%);
+            --text-primary: #F7F8FA; --text-secondary: #C9CDD4; --text-tertiary: #86909C;
+            --bg-primary: #17191E; --bg-secondary: #232529;
+            --card-bg: #232529;
+            --card-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+            --border-color: #2E3035;
+            --badge-bg: #1A3366; --badge-text: #699DFF;
+        }
+        [data-theme="light"] {
+            --primary: #165DFF; --primary-light: #4080FF;
+            --primary-gradient: linear-gradient(135deg, #165DFF 0%, #4080FF 100%);
+            --text-primary: #1D2129; --text-secondary: #4E5969; --text-tertiary: #86909C;
+            --bg-primary: #FFFFFF; --bg-secondary: #F7F8FA;
+            --card-bg: #FFFFFF;
+            --card-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+            --border-color: #E5E6EB;
+            --badge-bg: #E8F3FF; --badge-text: #165DFF;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            :root { --transition: none; }
+            * { animation: none !important; transition: none !important; }
+        }
+        html { scroll-behavior: smooth; }
+        body { color: var(--text-primary); background: var(--bg-primary); line-height: 1.6; font-size: 16px; }
+
+        /* ========== 导航栏 ========== */
+        .navbar {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+        }
+        @media (prefers-color-scheme: dark) { .navbar { background: rgba(23,25,30,0.88); } }
+        [data-theme="dark"] .navbar { background: rgba(23,25,30,0.88); }
+        [data-theme="light"] .navbar { background: rgba(255,255,255,0.85); }
+
+        .navbar-inner {
+            max-width: 800px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between; height: 52px;
+        }
+        .navbar-brand { font-size: 15px; font-weight: 600; color: var(--primary); text-decoration: none; }
+        .navbar-links { display: flex; gap: 4px; list-style: none; }
+        .navbar-links a {
+            display: block; padding: 6px 14px; font-size: 13px;
+            color: var(--text-secondary); text-decoration: none;
+            border-radius: 6px; transition: var(--transition);
+        }
+        .navbar-links a:hover, .navbar-links a.active { color: var(--primary); background: var(--badge-bg); }
+        .theme-toggle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition); font-size: 16px;
+        }
+        .theme-toggle:hover { color: var(--primary); background: var(--badge-bg); }
+
+        /* ========== 通用 ========== */
+        .container { max-width: 800px; margin: 0 auto; padding: 0 24px; }
+        .badge {
+            display: inline-block; padding: 3px 10px; background: var(--badge-bg);
+            color: var(--badge-text); border-radius: 20px; font-size: 12px;
+            font-weight: 500; margin: 0 6px 6px 0; cursor: pointer; transition: var(--transition);
+        }
+        .badge:hover { opacity: 0.8; }
+        .badge.active { background: var(--primary); color: #fff; }
+
+        /* ========== 博客头部 ========== */
+        .blog-hero {
+            padding: 60px 0 40px; background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color); text-align: center;
+        }
+        .blog-hero h1 { font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .blog-hero p { font-size: 15px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 20px; }
+        .tag-filter { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+
+        /* ========== 文章列表 ========== */
+        .post-list { padding: 40px 0; }
+        .post-card {
+            background: var(--card-bg); border-radius: 12px;
+            box-shadow: var(--card-shadow); padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px; transition: var(--transition); cursor: pointer;
+        }
+        .post-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
+        .post-card h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .post-card .post-meta {
+            font-size: 13px; color: var(--text-tertiary); margin-bottom: 10px;
+            display: flex; gap: 16px; flex-wrap: wrap;
+        }
+        .post-card .post-excerpt { font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px; }
+        .post-card .post-tags { display: flex; flex-wrap: wrap; }
+        .post-empty { text-align: center; padding: 60px 0; color: var(--text-tertiary); font-size: 15px; }
+
+        /* ========== 文章详情 ========== */
+        .post-detail { display: none; padding: 40px 0; }
+        .post-detail.active { display: block; }
+        .post-detail .back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; font-size: 13px; color: var(--primary);
+            background: var(--badge-bg); border: none; border-radius: 6px;
+            cursor: pointer; transition: var(--transition); margin-bottom: 24px;
+        }
+        .post-detail .back-btn:hover { background: var(--primary); color: #fff; }
+        .post-detail h1 { font-size: 26px; font-weight: 700; margin-bottom: 12px; }
+        .post-detail .post-meta { font-size: 13px; color: var(--text-tertiary); margin-bottom: 24px; display: flex; gap: 16px; }
+        .post-detail .post-body { font-size: 15px; color: var(--text-secondary); line-height: 1.8; }
+        .post-detail .post-body h2 { font-size: 20px; font-weight: 600; color: var(--text-primary); margin: 28px 0 12px; }
+        .post-detail .post-body h3 { font-size: 17px; font-weight: 600; color: var(--text-primary); margin: 20px 0 10px; }
+        .post-detail .post-body p { margin-bottom: 14px; }
+        .post-detail .post-body ul, .post-detail .post-body ol { margin: 0 0 14px 20px; }
+        .post-detail .post-body li { margin-bottom: 6px; }
+        .post-detail .post-body code {
+            background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px;
+            font-size: 13px; font-family: "SF Mono", "Fira Code", monospace;
+        }
+        .post-detail .post-body pre {
+            background: var(--bg-secondary); padding: 16px; border-radius: 8px;
+            overflow-x: auto; margin-bottom: 14px; border: 1px solid var(--border-color);
+        }
+        .post-detail .post-body pre code { background: none; padding: 0; }
+        .post-detail .post-body blockquote {
+            border-left: 3px solid var(--primary); padding: 12px 16px;
+            background: var(--bg-secondary); border-radius: 0 8px 8px 0;
+            margin-bottom: 14px; color: var(--text-secondary);
+        }
+
+        /* ========== 页脚 ========== */
+        footer {
+            text-align: center; padding: 24px 0; font-size: 14px;
+            color: var(--text-tertiary); border-top: 1px solid var(--border-color); margin-top: 40px;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .blog-hero { padding: 40px 0 30px; }
+            .blog-hero h1 { font-size: 24px; }
+            .navbar-links { display: none; }
+        }
+        @media (max-width: 480px) {
+            .post-card { padding: 16px; }
+            .post-detail h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a class="navbar-brand" href="index.html">📄 简历</a>
+            <ul class="navbar-links">
+                <li><a href="index.html">简历</a></li>
+                <li><a href="blog.html" class="active">博客</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle" title="切换主题" aria-label="切换主题">🌙</button>
+        </div>
+    </nav>
+
+    <!-- 博客头部 -->
+    <section class="blog-hero">
+        <div class="container">
+            <h1>📝 博客</h1>
+            <p>技术文章、学习笔记与项目复盘</p>
+            <div class="tag-filter" id="tagFilter"></div>
+        </div>
+    </section>
+
+    <!-- 文章列表 -->
+    <div class="container">
+        <div class="post-list" id="postList"></div>
+
+        <!-- 文章详情 -->
+        <div class="post-detail" id="postDetail">
+            <button class="back-btn" id="backBtn">← 返回列表</button>
+            <h1 id="detailTitle"></h1>
+            <div class="post-meta" id="detailMeta"></div>
+            <div class="post-body" id="detailBody"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p><span id="footerText"></span></p>
+        <p style="margin-top:8px;font-size:12px;color:var(--text-tertiary)">
+            👀 本页访问 <span id="busuanzi_value_page_pv">--</span> 次 · 全站访客 <span id="busuanzi_value_site_uv">--</span> 人
+        </p>
+    </footer>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <script>
+    // ================================================================
+    // ★★★ 在这里添加你的博客文章 ★★★
+    // ================================================================
+    const posts = [
+        {
+            id: "hello-world",
+            title: "Hello World — 我的第一篇博客",
+            date: "2025-04-17",
+            tags: ["随笔", "个人"],
+            excerpt: "这是我的个人博客的第一篇文章，记录一下建站的过程和想法。",
+            body: `
+                <p>你好，欢迎来到我的博客！这是第一篇文章，主要记录一下建站的过程。</p>
+                <h2>为什么要建博客？</h2>
+                <p>写博客是一种很好的学习方式。把学到的东西用自己的话写出来，能帮助加深理解，也方便以后回顾。</p>
+                <h2>技术选型</h2>
+                <p>这个博客采用了最简单的方案：</p>
+                <ul>
+                    <li>纯 HTML/CSS/JS，无需构建工具</li>
+                    <li>文章数据直接写在 JS 对象里</li>
+                    <li>GitHub Pages 免费托管</li>
+                    <li>不蒜子做访问统计</li>
+                </ul>
+                <blockquote>简单就是美。对于个人博客来说，不需要复杂的框架和数据库。</blockquote>
+                <h2>后续计划</h2>
+                <p>接下来会陆续分享一些技术学习笔记和项目经验，敬请期待！</p>
+            `
+        },
+        {
+            id: "learning-notes-template",
+            title: "如何高效整理技术学习笔记",
+            date: "2025-04-15",
+            tags: ["学习方法", "效率"],
+            excerpt: "分享我整理技术学习笔记的方法论，包括笔记结构、工具选择和复习策略。",
+            body: `
+                <p>学习新技术时，好的笔记习惯能让效率翻倍。这篇文章分享我的笔记方法。</p>
+                <h2>笔记的核心原则</h2>
+                <ul>
+                    <li><strong>结构化</strong>：按主题分类，建立清晰的目录结构</li>
+                    <li><strong>实践导向</strong>：每个知识点都配上代码示例</li>
+                    <li><strong>定期复习</strong>：用间隔重复法巩固记忆</li>
+                </ul>
+                <h2>推荐的笔记结构</h2>
+                <p>每篇笔记建议包含以下部分：</p>
+                <ol>
+                    <li>概念说明（是什么）</li>
+                    <li>使用场景（什么时候用）</li>
+                    <li>代码示例（怎么用）</li>
+                    <li>常见坑点（注意什么）</li>
+                    <li>参考资料（深入学习）</li>
+                </ol>
+                <h2>工具推荐</h2>
+                <p>我目前使用 Markdown 写笔记，配合 Git 做版本管理。简单、可移植、不依赖特定平台。</p>
+            `
+        }
+    ];
+
+    // ================================================================
+    // 以下是渲染逻辑
+    // ================================================================
+    let activeTag = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initTheme();
+        renderTagFilter();
+        renderPostList();
+        initBackBtn();
+        document.getElementById('footerText').textContent = '© 2025 个人博客 | Powered by GitHub Pages';
+        // URL hash 直接打开文章
+        if (location.hash) {
+            const post = posts.find(p => p.id === location.hash.slice(1));
+            if (post) showDetail(post);
+        }
+    });
+
+    /* ---------- 主题切换（与简历页同步）---------- */
+    function initTheme() {
+        const toggle = document.getElementById('themeToggle');
+        const saved = localStorage.getItem('resume-theme');
+        if (saved) {
+            document.documentElement.setAttribute('data-theme', saved);
+            toggle.textContent = saved === 'dark' ? '☀️' : '🌙';
+        }
+        toggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const isDark = current === 'dark' ||
+                (!current && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const next = isDark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('resume-theme', next);
+            toggle.textContent = next === 'dark' ? '☀️' : '🌙';
+        });
+    }
+
+    /* ---------- 标签筛选 ---------- */
+    function renderTagFilter() {
+        const allTags = [...new Set(posts.flatMap(p => p.tags))];
+        const el = document.getElementById('tagFilter');
+        el.innerHTML = `<span class="badge active" data-tag="">全部</span>` +
+            allTags.map(t => `<span class="badge" data-tag="${t}">${t}</span>`).join('');
+        el.addEventListener('click', e => {
+            const b = e.target.closest('.badge');
+            if (!b) return;
+            el.querySelectorAll('.badge').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            activeTag = b.dataset.tag || null;
+            renderPostList();
+        });
+    }
+
+    /* ---------- 文章列表 ---------- */
+    function renderPostList() {
+        const el = document.getElementById('postList');
+        const list = activeTag ? posts.filter(p => p.tags.includes(activeTag)) : posts;
+        if (!list.length) { el.innerHTML = '<div class="post-empty">暂无相关文章</div>'; return; }
+        el.innerHTML = list.map(p => `
+            <div class="post-card" data-id="${p.id}">
+                <h2>${p.title}</h2>
+                <div class="post-meta"><span>📅 ${p.date}</span><span>🏷️ ${p.tags.join(' / ')}</span></div>
+                <p class="post-excerpt">${p.excerpt}</p>
+                <div class="post-tags">${p.tags.map(t => `<span class="badge">${t}</span>`).join('')}</div>
+            </div>
+        `).join('');
+        el.querySelectorAll('.post-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const post = posts.find(p => p.id === card.dataset.id);
+                if (post) showDetail(post);
+            });
+        });
+    }
+
+    /* ---------- 文章详情 ---------- */
+    function showDetail(post) {
+        document.getElementById('postList').style.display = 'none';
+        document.querySelector('.blog-hero').style.display = 'none';
+        const d = document.getElementById('postDetail');
+        d.classList.add('active');
+        document.getElementById('detailTitle').textContent = post.title;
+        document.getElementById('detailMeta').innerHTML = `<span>📅 ${post.date}</span><span>🏷️ ${post.tags.join(' / ')}</span>`;
+        document.getElementById('detailBody').innerHTML = post.body;
+        history.replaceState(null, '', `#${post.id}`);
+        window.scrollTo({ top: 0 });
+    }
+
+    /* ---------- 返回列表 ---------- */
+    function initBackBtn() {
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('postDetail').classList.remove('active');
+            document.getElementById('postList').style.display = '';
+            document.querySelector('.blog-hero').style.display = '';
+            history.replaceState(null, '', location.pathname);
+        });
+    }
+    </script>
+</body>
+</html>

@@ -1,22 +1,26 @@
-# 个人简历网站
+# 技术博客
 
-纯 HTML/CSS/JS 实现的个人简历网站，支持深色模式、响应式布局、打印导出。
+我的技术博客，纯 HTML/CSS/JS 实现，零依赖，部署在 GitHub Pages。
 
-## 使用方法
+🔗 **在线预览**：https://walterhandsome.github.io/portfolio/
 
-1. 修改 `index.html` 中的 `resume` 对象，替换为你自己的信息
-2. 推送到 GitHub 仓库
-3. 开启 GitHub Pages（Settings → Pages → Deploy from branch → main）
-4. 访问 `https://你的用户名.github.io/仓库名/`
+## 项目结构
 
-## 功能特性
+```
+├── index.html      # 博客首页
+├── shared.css      # 公共样式
+├── rss.xml         # RSS 订阅
+├── sitemap.xml     # 站点地图
+├── robots.txt      # 爬虫规则
+└── README.md
+```
 
-- 纯前端，无需构建工具
-- 支持深色/浅色模式自动切换
-- 响应式布局，适配手机/平板/桌面
-- 支持浏览器打印导出 PDF
-- 滚动淡入动画
-- Tab 切换展示不同类别内容
-- 技能进度条可视化
-- 邮箱一键复制
-- 回到顶部按钮
+## 特性
+
+- 深色/浅色模式自动切换 + 手动切换
+- 响应式布局，适配手机、平板、桌面
+- 博客系统（标签筛选、URL hash 路由）
+- RSS 订阅支持
+- 无障碍支持（键盘导航、ARIA、skip-link）
+- 访问统计（51.la + 不蒜子）
+- SEO 优化（sitemap、Open Graph、Twitter Card）

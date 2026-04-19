@@ -1,0 +1,4 @@
+# git-crypt 加密配置
+# Kiro 自动化方案
+.kiro/hooks/*.kiro.hook filter=git-crypt diff=git-crypt
+.kiro/steering/*.md filter=git-crypt diff=git-crypt

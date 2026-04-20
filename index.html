@@ -284,10 +284,71 @@
 
         /* ========== 打印 ========== */
         @media print {
-            .navbar, .skip-link, .mobile-nav, .tag-filter, .blog-stats { display: none !important; }
+            .navbar, .skip-link, .mobile-nav, .tag-filter, .blog-stats, .back-to-top { display: none !important; }
             .post-card { box-shadow: none !important; border: 1px solid #ddd !important; }
             .blog-hero { background: #fff !important; }
             .blog-hero::before, .blog-hero::after { display: none !important; }
+        }
+
+        /* ========== 回到顶部 ========== */
+        .back-to-top {
+            position: fixed; bottom: 32px; right: 32px; z-index: 999;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: var(--primary); color: #fff; border: none;
+            font-size: 20px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(22,93,255,0.3);
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+        .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .back-to-top:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(22,93,255,0.4); }
+
+        /* ========== 代码块复制按钮 ========== */
+        .post-detail .post-body pre {
+            position: relative;
+        }
+        .code-copy-btn {
+            position: absolute; top: 8px; right: 8px;
+            padding: 4px 10px; font-size: 12px;
+            background: var(--bg-tertiary); color: var(--text-tertiary);
+            border: 1px solid var(--border-color); border-radius: 6px;
+            cursor: pointer; opacity: 0; transition: opacity 0.2s;
+        }
+        .post-detail .post-body pre:hover .code-copy-btn { opacity: 1; }
+        .code-copy-btn:hover { color: var(--primary); border-color: var(--primary); }
+        .code-copy-btn.copied { color: #52c41a; border-color: #52c41a; }
+
+        /* ========== 文章卡片阅读时长 ========== */
+        .post-card .post-reading-time {
+            font-size: 12px; color: var(--text-tertiary); margin-left: 8px;
+        }
+
+        /* ========== 上下篇导航 ========== */
+        .post-nav {
+            display: flex; justify-content: space-between; gap: 16px;
+            margin-top: 32px; padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+        .post-nav-item {
+            flex: 1; padding: 16px; background: var(--bg-secondary);
+            border-radius: 10px; border: 1px solid var(--border-color);
+            cursor: pointer; transition: var(--transition);
+            text-decoration: none; color: inherit;
+        }
+        .post-nav-item:hover { border-color: var(--primary); transform: translateY(-2px); }
+        .post-nav-item .nav-label {
+            font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px;
+        }
+        .post-nav-item .nav-title {
+            font-size: 14px; font-weight: 500; color: var(--text-primary);
+            display: -webkit-box; -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .post-nav-item.next { text-align: right; }
+        @media (max-width: 480px) {
+            .post-nav { flex-direction: column; }
         }
     </style>
 </head>
@@ -297,9 +358,10 @@
     <!-- 导航栏 -->
     <nav class="navbar" aria-label="主导航">
         <div class="navbar-inner">
-            <a class="navbar-brand" href="index.html">📝 博客</a>
+            <a class="navbar-brand" href="index.html">⚡ Walter's Tech Blog</a>
             <ul class="navbar-links">
                 <li><a href="index.html" class="active" aria-current="page">博客</a></li>
+                <li><a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
             </ul>
             <div style="display:flex;gap:8px;align-items:center">
                 <button class="menu-toggle" id="menuToggle" aria-label="打开导航菜单" aria-expanded="false" aria-controls="mobileNav">☰</button>
@@ -308,6 +370,7 @@
         </div>
         <ul class="mobile-nav" id="mobileNav" role="navigation" aria-label="移动端导航">
             <li><a href="index.html" aria-current="page">博客</a></li>
+            <li><a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
         </ul>
     </nav>
 
@@ -365,6 +428,7 @@
             👀 本页访问 <span id="busuanzi_value_page_pv">--</span> 次 · 全站访客 <span id="busuanzi_value_site_uv">--</span> 人
         </p>
     </footer>
+    <button class="back-to-top" id="backToTop" aria-label="回到顶部">↑</button>
     <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
     <script>
@@ -1016,7 +1080,8 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         renderTagFilter();
         renderPostList();
         initBackBtn();
-        document.getElementById('footerText').textContent = '© 2025 Walter\'s Tech Blog | Powered by GitHub Pages';
+        initBackToTop();
+        document.getElementById('footerText').textContent = `© ${new Date().getFullYear()} Walter's Tech Blog | Powered by GitHub Pages`;
         if (location.hash) {
             const post = posts.find(p => p.id === location.hash.slice(1));
             if (post) showDetail(post);
@@ -1117,6 +1182,10 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
     }
 
     /* ---------- 文章列表 ---------- */
+    function getReadingTime(body) {
+        return Math.max(1, Math.round(body.replace(/<[^>]*>/g, '').length / 400));
+    }
+
     function renderPostList() {
         const el = document.getElementById('postList');
         const list = activeTag ? posts.filter(p => p.tags.includes(activeTag)) : posts;
@@ -1129,7 +1198,7 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
                 <div class="post-card-body">
                     <div class="post-card-header">
                         <h2>${escapeHtml(p.title)}</h2>
-                        <span class="post-date"><time datetime="${escapeHtml(p.date)}">${escapeHtml(p.date)}</time></span>
+                        <span class="post-date"><time datetime="${escapeHtml(p.date)}">${escapeHtml(p.date)}</time><span class="post-reading-time">· ${getReadingTime(p.body)} min</span></span>
                     </div>
                     <p class="post-excerpt">${escapeHtml(p.excerpt)}</p>
                     <div class="post-card-footer">
@@ -1159,13 +1228,79 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         document.getElementById('detailTitle').textContent = post.title;
         document.getElementById('detailMeta').innerHTML =
             `<span>📅 <time datetime="${escapeHtml(post.date)}">${escapeHtml(post.date)}</time></span>` +
-            `<span>📖 约 ${Math.max(1, Math.round(post.body.replace(/<[^>]*>/g, '').length / 400))} 分钟阅读</span>` +
+            `<span>📖 约 ${getReadingTime(post.body)} 分钟阅读</span>` +
             `<div class="post-meta-tags">${post.tags.map(t => `<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>`;
         document.getElementById('detailBody').innerHTML = post.body;
         document.title = `${post.title} - Walter's Tech Blog`;
         history.replaceState(null, '', `#${post.id}`);
         window.scrollTo({ top: 0 });
         document.getElementById('detailTitle').focus();
+        addCopyButtons();
+        renderPostNav(post);
+    }
+
+    /* ---------- 代码块复制按钮 ---------- */
+    function addCopyButtons() {
+        document.querySelectorAll('.post-body pre').forEach(pre => {
+            if (pre.querySelector('.code-copy-btn')) return;
+            const btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = '复制';
+            btn.setAttribute('aria-label', '复制代码');
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const code = pre.querySelector('code');
+                navigator.clipboard.writeText(code ? code.textContent : pre.textContent).then(() => {
+                    btn.textContent = '已复制 ✓';
+                    btn.classList.add('copied');
+                    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+                });
+            });
+            pre.appendChild(btn);
+        });
+    }
+
+    /* ---------- 上下篇导航 ---------- */
+    function renderPostNav(currentPost) {
+        const idx = posts.findIndex(p => p.id === currentPost.id);
+        const prev = idx < posts.length - 1 ? posts[idx + 1] : null;
+        const next = idx > 0 ? posts[idx - 1] : null;
+        let navEl = document.getElementById('postNav');
+        if (!navEl) {
+            navEl = document.createElement('div');
+            navEl.id = 'postNav';
+            navEl.className = 'post-nav';
+            const footer = document.querySelector('.post-detail-footer');
+            footer.parentNode.insertBefore(navEl, footer);
+        }
+        navEl.innerHTML = (prev ? `
+            <div class="post-nav-item prev" data-id="${escapeHtml(prev.id)}">
+                <div class="nav-label">← 上一篇</div>
+                <div class="nav-title">${escapeHtml(prev.title)}</div>
+            </div>` : '<div></div>') +
+            (next ? `
+            <div class="post-nav-item next" data-id="${escapeHtml(next.id)}">
+                <div class="nav-label">下一篇 →</div>
+                <div class="nav-title">${escapeHtml(next.title)}</div>
+            </div>` : '<div></div>');
+        navEl.querySelectorAll('.post-nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const p = posts.find(x => x.id === item.dataset.id);
+                if (p) showDetail(p);
+            });
+        });
+    }
+
+    /* ---------- 回到顶部 ---------- */
+    function initBackToTop() {
+        const btn = document.getElementById('backToTop');
+        if (!btn) return;
+        window.addEventListener('scroll', () => {
+            btn.classList.toggle('visible', window.scrollY > 400);
+        });
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     }
 
     /* ---------- 返回列表 ---------- */
@@ -1176,6 +1311,8 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
             document.querySelector('.blog-hero').style.display = '';
             document.title = 'Walter\'s Tech Blog';
             history.replaceState(null, '', location.pathname);
+            const navEl = document.getElementById('postNav');
+            if (navEl) navEl.innerHTML = '';
         };
         document.getElementById('backBtn').addEventListener('click', goBack);
         document.getElementById('backBtnBottom').addEventListener('click', goBack);

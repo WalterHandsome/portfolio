@@ -367,6 +367,43 @@
             border-bottom: none; transition: color 0.2s;
         }
         .post-toc .toc-link:hover { color: var(--primary); }
+
+        /* ========== 阅读进度条 ========== */
+        .reading-progress {
+            position: fixed; top: 52px; left: 0; width: 0; height: 3px;
+            background: var(--primary-gradient); z-index: 999;
+            transition: width 0.1s linear;
+        }
+
+        /* ========== 搜索框 ========== */
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            width: 100%; padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border-color); border-radius: 10px;
+            background: var(--card-bg); color: var(--text-primary);
+            font-size: 14px; outline: none; transition: var(--transition);
+        }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22,93,255,0.1); }
+        .search-input::placeholder { color: var(--text-tertiary); }
+        .search-wrapper {
+            position: relative;
+        }
+        .search-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            font-size: 14px; color: var(--text-tertiary); pointer-events: none;
+        }
+
+        /* ========== 评论区 ========== */
+        .post-comments {
+            margin-top: 40px; padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+        .post-comments h3 {
+            font-size: 18px; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -390,6 +427,7 @@
             <li><a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
         </ul>
     </nav>
+    <div class="reading-progress" id="readingProgress"></div>
 
     <!-- 博客头部 -->
     <section class="blog-hero" aria-labelledby="blogTitle">
@@ -422,6 +460,12 @@
 
     <!-- 文章列表 -->
     <main class="container" id="main-content">
+        <div class="search-box" id="searchBox">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索文章标题、摘要..." aria-label="搜索文章">
+            </div>
+        </div>
         <div class="post-list" id="postList" role="feed" aria-label="文章列表"></div>
 
         <!-- 文章详情 -->
@@ -432,6 +476,7 @@
                 <div class="post-meta" id="detailMeta"></div>
             </div>
             <div class="post-body" id="detailBody"></div>
+            <div class="post-comments" id="postComments"></div>
             <div class="post-detail-footer">
                 <span class="share-hint">💡 觉得有用？分享给你的朋友吧</span>
                 <button class="back-btn" id="backBtnBottom" aria-label="返回文章列表">← 返回列表</button>
@@ -1340,6 +1385,8 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         renderPostList();
         initBackBtn();
         initBackToTop();
+        initSearch();
+        initReadingProgress();
         document.getElementById('footerText').textContent = `© ${new Date().getFullYear()} Walter's Tech Blog | Powered by GitHub Pages`;
         // 处理 URL 参数
         const params = new URLSearchParams(location.search);
@@ -1463,9 +1510,13 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         return Math.max(1, Math.round(body.replace(/<[^>]*>/g, '').length / 400));
     }
 
-    function renderPostList() {
+    function renderPostList(searchQuery) {
         const el = document.getElementById('postList');
-        const list = activeTag ? posts.filter(p => p.tags.includes(activeTag)) : posts;
+        let list = activeTag ? posts.filter(p => p.tags.includes(activeTag)) : posts;
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            list = list.filter(p => p.title.toLowerCase().includes(q) || p.excerpt.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q)));
+        }
         if (!list.length) {
             el.innerHTML = '<div class="post-empty"><span class="empty-icon">📭</span>暂无相关文章</div>';
             return;
@@ -1500,6 +1551,7 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
     function showDetail(post) {
         document.getElementById('postList').style.display = 'none';
         document.querySelector('.blog-hero').style.display = 'none';
+        document.getElementById('searchBox').style.display = 'none';
         const d = document.getElementById('postDetail');
         d.classList.add('active');
         document.getElementById('detailTitle').textContent = post.title;
@@ -1515,6 +1567,7 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         addCopyButtons();
         renderPostNav(post);
         renderTOC();
+        loadGiscus(post.id);
     }
 
     /* ---------- 文章目录 (TOC) ---------- */
@@ -1590,6 +1643,59 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         });
     }
 
+    /* ---------- 搜索 ---------- */
+    function initSearch() {
+        const input = document.getElementById('searchInput');
+        if (!input) return;
+        let debounceTimer;
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                renderPostList(input.value.trim());
+            }, 200);
+        });
+    }
+
+    /* ---------- 阅读进度条 ---------- */
+    function initReadingProgress() {
+        const bar = document.getElementById('readingProgress');
+        if (!bar) return;
+        window.addEventListener('scroll', () => {
+            const detail = document.getElementById('postDetail');
+            if (!detail || !detail.classList.contains('active')) {
+                bar.style.width = '0';
+                return;
+            }
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            bar.style.width = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) + '%' : '0';
+        });
+    }
+
+    /* ---------- Giscus 评论 ---------- */
+    function loadGiscus(postId) {
+        const container = document.getElementById('postComments');
+        if (!container) return;
+        container.innerHTML = '<h3>💬 评论</h3><div id="giscusContainer"></div>';
+        const script = document.createElement('script');
+        script.src = 'https://giscus.app/client.js';
+        script.setAttribute('data-repo', 'WalterHandsome/portfolio');
+        script.setAttribute('data-repo-id', '');
+        script.setAttribute('data-category', 'Announcements');
+        script.setAttribute('data-category-id', '');
+        script.setAttribute('data-mapping', 'specific');
+        script.setAttribute('data-term', postId);
+        script.setAttribute('data-strict', '0');
+        script.setAttribute('data-reactions-enabled', '1');
+        script.setAttribute('data-emit-metadata', '0');
+        script.setAttribute('data-input-position', 'top');
+        script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+        script.setAttribute('data-lang', 'zh-CN');
+        script.setAttribute('crossorigin', 'anonymous');
+        script.async = true;
+        document.getElementById('giscusContainer').appendChild(script);
+    }
+
     /* ---------- 回到顶部 ---------- */
     function initBackToTop() {
         const btn = document.getElementById('backToTop');
@@ -1608,10 +1714,13 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
             document.getElementById('postDetail').classList.remove('active');
             document.getElementById('postList').style.display = '';
             document.querySelector('.blog-hero').style.display = '';
+            document.getElementById('searchBox').style.display = '';
             document.title = 'Walter\'s Tech Blog';
             history.replaceState(null, '', location.pathname);
             const navEl = document.getElementById('postNav');
             if (navEl) navEl.innerHTML = '';
+            const comments = document.getElementById('postComments');
+            if (comments) comments.innerHTML = '';
         };
         document.getElementById('backBtn').addEventListener('click', goBack);
         document.getElementById('backBtnBottom').addEventListener('click', goBack);

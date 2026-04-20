@@ -315,10 +315,10 @@
     <section class="blog-hero" aria-labelledby="blogTitle">
         <div class="container">
             <div class="blog-hero-content">
-                <div class="blog-hero-avatar">🧑‍💻</div>
+                <div class="blog-hero-avatar">⚡</div>
                 <div class="blog-hero-text">
                     <h1 id="blogTitle">Walter's Tech Blog</h1>
-                    <p>AI Agent · 后端架构 · 技术探索<br>
+                    <p>AI Agent · LLM · 全栈工程<br>
                     基于 <a class="hero-link" href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">400+ 篇开源技术笔记</a> 的深度分享</p>
                 </div>
             </div>
@@ -333,7 +333,7 @@
                 </div>
                 <div class="blog-stat">
                     <span class="stat-num" id="statWords">0</span>
-                    <span class="stat-label">总字数</span>
+                    <span class="stat-label">分钟阅读</span>
                 </div>
             </div>
             <div class="tag-filter" id="tagFilter" role="group" aria-label="标签筛选"></div>
@@ -376,7 +376,7 @@
             id: "agent-security-prompt-injection",
             title: "Agent 安全实战：Prompt 注入、记忆投毒与纵深防御",
             date: "2026-04-20",
-            tags: ["AI Agent", "安全", "Prompt 注入"],
+            tags: ["Agent 安全", "Prompt 注入"],
             excerpt: "当 AI Agent 拥有了操作真实世界的能力，安全问题就不再只是输出一段有害文本那么简单。从真实 CVE 案例到记忆投毒攻击，系统梳理 Agent 安全的威胁全景与防御体系。",
             body: `
                 <p>2025 年，一个电商平台的 LLM 客服系统被攻击者通过精心构造的对话诱导，执行了超过 20 万美元的未授权退款。同年，Chevrolet 经销商的聊天机器人被说服以 1 美元出售价值 76,000 美元的 Tahoe。Air Canada 的机器人自行"发明"了一个不存在的退款政策，法院裁定航空公司必须遵守。</p>
@@ -523,7 +523,7 @@ Agentic AI（有工具 + 自主性）：
             id: "mcp-protocol-deep-dive",
             title: "MCP 协议深度解析：AI Agent 的「USB 接口」",
             date: "2026-04-18",
-            tags: ["MCP", "AI Agent", "协议"],
+            tags: ["MCP", "Agent 工具"],
             excerpt: "MCP（Model Context Protocol）正在成为 AI Agent 连接外部工具的事实标准。这篇文章从协议设计、核心架构到实战开发，带你彻底搞懂 MCP。",
             body: `
                 <p>如果说 AI Agent 是大脑，那工具就是它的手脚。而 <strong>MCP（Model Context Protocol）</strong> 就是连接大脑和手脚的神经系统——一个由 Anthropic 在 2024 年底提出的开放协议，定义了 LLM 应用如何与外部数据源和工具进行标准化通信。</p>
@@ -629,7 +629,7 @@ if __name__ == "__main__":
             id: "ai-agent-framework-comparison",
             title: "AI Agent 框架选型：LangGraph vs CrewAI vs OpenAI SDK 实战对比",
             date: "2026-04-18",
-            tags: ["AI Agent", "框架选型", "LangGraph"],
+            tags: ["Agent 框架", "LangGraph"],
             excerpt: "面对十几个 AI Agent 框架，到底该选哪个？基于实际项目经验，从架构设计、开发体验、生产就绪度三个维度做横向对比。",
             body: `
                 <p>AI Agent 框架在 2025-2026 年经历了一轮爆发式增长：LangGraph、CrewAI、OpenAI Agents SDK、Google ADK、AWS Strands、Mastra、AG2……面对这么多选择，开发者最常问的问题就是：<strong>我该用哪个？</strong></p>
@@ -741,7 +741,7 @@ writer = Agent(name="writer",
             id: "rag-from-beginner-to-advanced",
             title: "RAG 从入门到进阶：让 LLM 拥有你的私有知识库",
             date: "2026-04-18",
-            tags: ["RAG", "向量数据库", "AI Agent"],
+            tags: ["RAG", "向量数据库"],
             excerpt: "RAG 是让 LLM 突破训练数据限制的关键技术。从基础架构到高级优化策略，一篇文章带你掌握 RAG 的核心要点。",
             body: `
                 <p>LLM 的知识有截止日期，也不了解你的私有数据。<strong>RAG（Retrieval-Augmented Generation，检索增强生成）</strong>就是解决这个问题的核心技术——先从知识库中检索相关信息，再把检索结果作为上下文送给 LLM 生成回答。</p>
@@ -849,7 +849,7 @@ def multi_query_retrieve(question: str) -> list:
             id: "context-engineering",
             title: "Context Engineering：比 Prompt Engineering 更重要的事",
             date: "2026-04-18",
-            tags: ["AI Agent", "Context Engineering", "LLM"],
+            tags: ["Context Engineering", "LLM"],
             excerpt: "当 AI Agent 从 Demo 走向生产，真正决定成败的不是你怎么写 Prompt，而是你怎么设计整个上下文系统。深入解析 Context Engineering 的核心理念与实战方法。",
             body: `
                 <p>2025 年中，Shopify CEO Tobi Lütke 和前 OpenAI 研究员 Andrej Karpathy 几乎同时提出了一个观点：<strong>Context Engineering 比 Prompt Engineering 更重要</strong>。随后 Simon Willison 在博客中正式为这个概念定调。到了 2026 年，Context Engineering 已经成为 AI Agent 开发领域最核心的工程能力之一。</p>
@@ -1028,15 +1028,13 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         document.getElementById('statPosts').textContent = posts.length;
         const allTags = [...new Set(posts.flatMap(p => p.tags))];
         document.getElementById('statTags').textContent = allTags.length;
-        // 粗略估算总字数
+        // 估算总阅读时长（按 400 字/分钟）
         const totalWords = posts.reduce((sum, p) => {
             const text = p.body.replace(/<[^>]*>/g, '');
             return sum + text.length;
         }, 0);
-        document.getElementById('statWords').textContent =
-            totalWords > 10000 ? (totalWords / 10000).toFixed(1) + '万' :
-            totalWords > 1000 ? (totalWords / 1000).toFixed(1) + 'k' :
-            totalWords;
+        const totalMinutes = Math.max(1, Math.round(totalWords / 400));
+        document.getElementById('statWords').textContent = totalMinutes;
     }
 
     /* ---------- 主题切换 ---------- */

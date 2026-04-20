@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="王蕴的技术博客 - AI Agent、RAG、Context Engineering、MCP 协议等前沿技术深度文章，基于 400+ 篇开源技术笔记">
+    <meta name="description" content="Walter的技术博客 - AI Agent、RAG、Context Engineering、MCP 协议等前沿技术深度文章，基于 400+ 篇开源技术笔记">
     <meta name="keywords" content="AI Agent, RAG, Context Engineering, MCP, LangGraph, CrewAI, LLM, 人工智能, 技术博客">
-    <meta name="author" content="王蕴">
-    <meta property="og:title" content="王蕴的技术博客 - AI Agent 深度技术分享">
+    <meta name="author" content="Walter">
+    <meta property="og:title" content="Walter的技术博客 - AI Agent 深度技术分享">
     <meta property="og:description" content="AI Agent、RAG、Context Engineering、MCP 协议等前沿技术文章，基于 400+ 篇开源笔记的深度分享">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://walterhandsome.github.io/">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="王蕴的技术博客 - AI Agent 深度技术分享">
+    <meta name="twitter:title" content="Walter的技术博客 - AI Agent 深度技术分享">
     <meta name="twitter:description" content="AI Agent、RAG、Context Engineering、MCP 协议等前沿技术文章">
-    <link rel="alternate" type="application/rss+xml" title="王蕴的技术博客 RSS" href="rss.xml">
+    <link rel="alternate" type="application/rss+xml" title="Walter的技术博客 RSS" href="rss.xml">
     <link rel="canonical" href="https://walterhandsome.github.io/">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
     <link rel="stylesheet" href="shared.css">
-    <title>王蕴的技术博客</title>
+    <title>Walter的技术博客</title>
 
     <!-- 51.la 统计 - 延迟加载 -->
     <script>
@@ -317,7 +317,7 @@
             <div class="blog-hero-content">
                 <div class="blog-hero-avatar">🧑‍💻</div>
                 <div class="blog-hero-text">
-                    <h1 id="blogTitle">王蕴的技术博客</h1>
+                    <h1 id="blogTitle">Walter的技术博客</h1>
                     <p>AI Agent · 后端架构 · 技术探索<br>
                     基于 <a class="hero-link" href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">400+ 篇开源技术笔记</a> 的深度分享</p>
                 </div>
@@ -1016,7 +1016,7 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         renderTagFilter();
         renderPostList();
         initBackBtn();
-        document.getElementById('footerText').textContent = '© 2025 王蕴的技术博客 | Powered by GitHub Pages';
+        document.getElementById('footerText').textContent = '© 2025 Walter的技术博客 | Powered by GitHub Pages';
         if (location.hash) {
             const post = posts.find(p => p.id === location.hash.slice(1));
             if (post) showDetail(post);
@@ -1164,7 +1164,7 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
             `<span>📖 约 ${Math.max(1, Math.round(post.body.replace(/<[^>]*>/g, '').length / 400))} 分钟阅读</span>` +
             `<div class="post-meta-tags">${post.tags.map(t => `<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>`;
         document.getElementById('detailBody').innerHTML = post.body;
-        document.title = `${post.title} - 王蕴的技术博客`;
+        document.title = `${post.title} - Walter的技术博客`;
         history.replaceState(null, '', `#${post.id}`);
         window.scrollTo({ top: 0 });
         document.getElementById('detailTitle').focus();
@@ -1176,7 +1176,7 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
             document.getElementById('postDetail').classList.remove('active');
             document.getElementById('postList').style.display = '';
             document.querySelector('.blog-hero').style.display = '';
-            document.title = '王蕴的技术博客';
+            document.title = 'Walter的技术博客';
             history.replaceState(null, '', location.pathname);
         };
         document.getElementById('backBtn').addEventListener('click', goBack);

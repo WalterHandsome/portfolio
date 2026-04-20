@@ -350,6 +350,23 @@
         @media (max-width: 480px) {
             .post-nav { flex-direction: column; }
         }
+
+        /* ========== 文章目录 ========== */
+        .post-toc {
+            background: var(--bg-secondary); border-radius: 10px;
+            padding: 16px 20px; margin-bottom: 28px;
+            border: 1px solid var(--border-color);
+        }
+        .post-toc .toc-title {
+            font-size: 14px; font-weight: 600; color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+        .post-toc .toc-link {
+            display: block; padding: 4px 0; font-size: 14px;
+            color: var(--text-secondary); text-decoration: none;
+            border-bottom: none; transition: color 0.2s;
+        }
+        .post-toc .toc-link:hover { color: var(--primary); }
     </style>
 </head>
 <body>
@@ -436,6 +453,248 @@
     // ★★★ 在这里添加你的博客文章 ★★★
     // ================================================================
     const posts = [
+        {
+            id: "vibe-coding-era",
+            title: "Vibe Coding 时代：用自然语言构建应用的完整指南",
+            date: "2026-04-20",
+            tags: ["Vibe Coding", "Coding Agent"],
+            excerpt: "Andrej Karpathy 提出的 Vibe Coding 正在让'人人都是开发者'成为现实。从 Replit 到 Bolt.new，一文搞懂 Vibe Coding 工具生态、适用场景与局限性。",
+            body: `
+                <p>2025 年初，OpenAI 联合创始人 Andrej Karpathy 提出了一个概念：<strong>Vibe Coding</strong>——"你描述你想要什么，AI 来构建它"。这不是传统意义上的 AI 辅助编程（Copilot 帮你补全代码），而是一种全新的范式：<strong>用自然语言直接生成完整应用</strong>，从前端到后端到数据库到部署，一句话搞定。</p>
+                <p>到 2026 年，Replit、Bolt.new、Lovable、v0 等 Vibe Coding 工具已经拥有数百万用户。非开发者用它们搭建 MVP，开发者用它们快速验证想法。这篇文章带你理解 Vibe Coding 的工具生态、实际能力边界，以及它和 IDE Agent 的本质区别。</p>
+
+                <h2>Coding 工具光谱：从 Vibe Coding 到终端 Agent</h2>
+                <p>AI 编程工具并不是铁板一块，它们分布在一个光谱上：</p>
+<pre><code>非开发者友好 ←──────────────────→ 开发者专业
+
+Vibe Coding        IDE Agent       终端 Agent
+┌──────────┐    ┌──────────┐    ┌──────────┐
+│ Replit    │    │ Cursor   │    │Claude Code│
+│ Bolt.new  │    │ Kiro     │    │ Codex    │
+│ Lovable   │    │ Windsurf │    │ Aider    │
+│ v0        │    │ Copilot  │    │          │
+└──────────┘    └──────────┘    └──────────┘
+
+"说出来就行"     "一起写代码"     "命令行搞定"
+零代码经验        需要代码能力     高级开发者
+完整应用          现有项目增强     自动化/CI</code></pre>
+                <p>Vibe Coding 的核心受众是<strong>非开发者和快速原型场景</strong>，而 Cursor/Kiro 这类 IDE Agent 面向的是<strong>专业开发者的日常工作</strong>。两者不是替代关系，而是互补。</p>
+
+                <h2>四大 Vibe Coding 平台对比</h2>
+                <h3>Replit Agent — 全栈应用构建</h3>
+                <p>浏览器端 AI 开发平台，从描述到部署全流程自动化。支持多语言多框架，内置 PostgreSQL 数据库，Agent v4 具备自主调试能力。你只需要说"帮我做一个待办事项 App，支持分类和截止日期"，Replit 会自动选择技术栈、设计数据库、编写前后端代码、调试错误、一键部署。</p>
+
+                <h3>v0 by Vercel — UI 组件生成</h3>
+                <p>专注 React/Next.js 前端组件生成。从文字描述甚至截图生成高质量 UI 组件，基于 shadcn/ui + Tailwind CSS。适合前端开发者快速出 UI 原型，但不处理后端逻辑。</p>
+
+                <h3>Bolt.new by StackBlitz — 浏览器内全栈</h3>
+                <p>基于 WebContainer 技术，在浏览器中运行完整 Node.js 环境。支持 React、Vue、Svelte、Next.js 等多框架，代码修改即时预览，一键部署到 Netlify。最大特点是<strong>纯浏览器运行，无需任何本地环境</strong>。</p>
+
+                <h3>Lovable — SaaS MVP 构建器</h3>
+                <p>全栈应用构建器，深度集成 GitHub 和 Supabase。代码自动同步到 GitHub 仓库，数据库、认证、存储通过 Supabase 一键配置。Agent Mode 具备自主调试能力。最适合<strong>需要后续维护的 SaaS MVP</strong>。</p>
+
+                <h2>选型决策树</h2>
+<pre><code>你是谁？你要做什么？
+│
+├─ 非开发者，想做一个完整应用
+│   ├─ 需要数据库和后端     → Replit 或 Lovable
+│   ├─ 只需要前端页面       → v0 或 Bolt.new
+│   └─ 想学编程             → Replit（最佳学习环境）
+│
+├─ 开发者，快速原型验证
+│   ├─ UI 原型              → v0（最快出 UI）
+│   ├─ 全栈 MVP             → Bolt.new 或 Lovable
+│   └─ 需要后续维护         → Lovable（GitHub 同步）
+│
+├─ 专业开发者，日常工作
+│   ├─ 现有项目增强         → Cursor / Kiro
+│   └─ 终端自动化           → Claude Code
+│
+└─ 黑客松/比赛
+    └─ Bolt.new 或 Replit（最快出成品）</code></pre>
+
+                <h2>Vibe Coding 的真实边界</h2>
+                <p>Vibe Coding 不是银弹。了解它的局限性和了解它的能力一样重要：</p>
+                <ul>
+                    <li><strong>适合</strong>：MVP/原型验证、内部工具、学习实验、黑客松、个人项目、非技术人员的自动化</li>
+                    <li><strong>不适合</strong>：大型复杂系统、高性能要求、安全敏感应用、深度定制、遗留系统维护、团队协作开发</li>
+                </ul>
+                <p>核心问题在于：</p>
+                <ol>
+                    <li><strong>代码质量</strong>：生成的代码可能不符合最佳实践，缺少错误处理和边界情况</li>
+                    <li><strong>可维护性</strong>：非开发者生成的项目，后续维护是个大问题</li>
+                    <li><strong>安全性</strong>：自动生成的代码可能存在 SQL 注入、XSS 等安全漏洞</li>
+                    <li><strong>扩展性</strong>：简单架构难以应对用户增长和功能膨胀</li>
+                </ol>
+
+                <h2>最佳实践：Vibe Coding + IDE Agent 组合拳</h2>
+                <p>最聪明的做法不是二选一，而是组合使用：</p>
+                <ol>
+                    <li><strong>原型阶段</strong>：用 Vibe Coding（Replit/Bolt.new）快速验证想法，几小时内出可演示的 MVP</li>
+                    <li><strong>验证成功后</strong>：用 IDE Agent（Kiro/Cursor）重构为生产级代码，加入测试、安全防护、CI/CD</li>
+                    <li><strong>或者直接</strong>：用 Kiro 的 Specs 功能从需求开始规范化开发，跳过原型阶段</li>
+                </ol>
+                <blockquote>Vibe Coding 降低了"从 0 到 1"的门槛，IDE Agent 保证了"从 1 到 100"的质量。两者结合，才是 AI 时代开发者的最优工作流。更多 Coding Agent 相关笔记，参考我的 <a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub 仓库</a> 中 Coding Agent 章节的 6 篇深度笔记。</blockquote>
+            `
+        },
+        {
+            id: "function-calling-in-action",
+            title: "Function Calling 实战：让 LLM 操作真实世界",
+            date: "2026-04-20",
+            tags: ["Function Calling", "LLM"],
+            excerpt: "Function Calling 是 AI Agent 从'能说'到'能做'的关键技术。从 OpenAI 到 Claude 的实现差异，到并行调用、流式处理的生产级实践。",
+            body: `
+                <p>LLM 本质上只能生成文本。但通过 <strong>Function Calling</strong>（函数调用），LLM 可以"操作"真实世界——查询数据库、发送邮件、调用 API、操作文件系统。这是 AI Agent 从"能说"到"能做"的关键跳跃。</p>
+                <p>Function Calling 的核心思路很简单：你告诉 LLM 有哪些工具可用（工具名称、参数定义），LLM 根据用户请求判断是否需要调用工具，如果需要就生成调用参数，你执行工具后把结果返回给 LLM，LLM 再整合生成最终回答。</p>
+
+                <h2>核心流程</h2>
+<pre><code>用户请求 → LLM 判断是否需要工具 → 生成工具调用参数
+    → 执行工具 → 结果返回 LLM → 生成最终回答
+
+┌──────┐    ┌──────┐    ┌──────┐    ┌──────┐
+│ User │ →  │ LLM  │ →  │ Tool │ →  │ LLM  │ → 最终回答
+│      │    │判断+参数│   │ 执行  │    │ 整合  │
+└──────┘    └──────┘    └──────┘    └──────┘</code></pre>
+                <p>注意：<strong>LLM 本身不执行工具</strong>，它只是生成"我想调用 get_weather，参数是 city=北京"这样的结构化输出。实际执行是你的代码负责的。这个设计保证了安全性——你可以在执行前做权限检查、参数校验、审计日志。</p>
+
+                <h2>OpenAI Function Calling 实战</h2>
+<pre><code>from openai import OpenAI
+import json
+
+client = OpenAI()
+
+# 定义工具（JSON Schema 格式）
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "get_weather",
+        "description": "获取指定城市的天气信息",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string", "description": "城市名称"},
+                "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
+            },
+            "required": ["city"]
+        }
+    }
+}]
+
+# 第一轮：LLM 决定调用工具
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "北京今天天气怎么样？"}],
+    tools=tools,
+    tool_choice="auto"  # auto / required / none
+)
+
+message = response.choices[0].message
+if message.tool_calls:
+    tool_call = message.tool_calls[0]
+    args = json.loads(tool_call.function.arguments)
+    result = get_weather(**args)  # 你的代码执行工具
+
+    # 第二轮：将结果返回 LLM 整合
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": "北京今天天气怎么样？"},
+            message,
+            {"role": "tool", "tool_call_id": tool_call.id,
+             "content": json.dumps(result)}
+        ]
+    )
+    print(response.choices[0].message.content)</code></pre>
+
+                <h2>Claude Function Calling 的差异</h2>
+                <p>Claude 的实现和 OpenAI 有几个关键差异：</p>
+                <ul>
+                    <li><strong>参数定义</strong>：Claude 用 <code>input_schema</code> 而不是 <code>parameters</code></li>
+                    <li><strong>响应结构</strong>：Claude 用 content-block 架构，工具调用和文本响应清晰分离</li>
+                    <li><strong>可靠性</strong>：2026 Q1 评测中，Claude 工具调用可靠性评分 8.4/10，领先 OpenAI 的 6.3/10</li>
+                </ul>
+<pre><code>import anthropic
+
+client = anthropic.Anthropic()
+
+tools = [{
+    "name": "query_database",
+    "description": "查询数据库获取信息",
+    "input_schema": {  # 注意：不是 parameters
+        "type": "object",
+        "properties": {
+            "sql": {"type": "string", "description": "SQL 查询语句"},
+            "database": {"type": "string", "description": "数据库名称"}
+        },
+        "required": ["sql"]
+    }
+}]
+
+response = client.messages.create(
+    model="claude-sonnet-4-20250514",
+    max_tokens=1024,
+    tools=tools,
+    messages=[{"role": "user", "content": "查询上月销售额最高的产品"}]
+)
+
+# Claude 的 content-block 架构
+for block in response.content:
+    if block.type == "tool_use":
+        result = execute_sql(block.input["sql"])
+        # 返回结果继续对话...</code></pre>
+
+                <h2>并行工具调用</h2>
+                <p>当用户问"北京和上海今天天气怎么样？"时，LLM 可以一次返回两个工具调用，你可以并行执行它们：</p>
+<pre><code>response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "北京和上海天气怎么样？"}],
+    tools=tools,
+    parallel_tool_calls=True  # 启用并行
+)
+
+# message.tool_calls 包含多个调用
+# [ToolCall("get_weather", {"city":"北京"}),
+#  ToolCall("get_weather", {"city":"上海"})]
+
+import asyncio
+
+async def execute_parallel(tool_calls):
+    tasks = [asyncio.create_task(
+        async_get_weather(**json.loads(tc.function.arguments))
+    ) for tc in tool_calls]
+    return await asyncio.gather(*tasks)</code></pre>
+                <p>并行调用能显著降低延迟。如果两个工具各需要 1 秒，串行需要 2 秒，并行只需要 1 秒。</p>
+
+                <h2>多模型对比</h2>
+                <p>不同模型在 Function Calling 上的能力差异：</p>
+                <ul>
+                    <li><strong>最大工具数</strong>：OpenAI 128 个、Gemini 128 个、Claude 64 个</li>
+                    <li><strong>工具可靠性</strong>：Claude 8.4/10 &gt; Gemini 7.9/10 &gt; OpenAI 6.3/10</li>
+                    <li><strong>并行调用</strong>：三家都支持</li>
+                    <li><strong>流式调用</strong>：三家都支持，但实现方式不同</li>
+                </ul>
+
+                <h2>生产环境最佳实践</h2>
+                <ol>
+                    <li><strong>工具描述要精确</strong>：LLM 根据 description 决定何时调用工具，模糊的描述会导致误调用或漏调用</li>
+                    <li><strong>参数校验不可少</strong>：LLM 生成的参数可能不合法（比如 SQL 注入），执行前必须校验</li>
+                    <li><strong>设置超时和重试</strong>：工具执行可能失败或超时，需要有兜底策略</li>
+                    <li><strong>记录审计日志</strong>：每次工具调用都应该记录，便于调试和安全审计</li>
+                    <li><strong>控制工具数量</strong>：工具太多会增加 token 消耗和降低选择准确率，建议根据用户意图动态选择工具子集</li>
+                    <li><strong>用 <code>tool_choice</code> 控制行为</strong>：<code>auto</code>（LLM 自行判断）、<code>required</code>（强制调用）、<code>none</code>（禁止调用），根据场景选择</li>
+                </ol>
+
+                <h2>Function Calling vs MCP</h2>
+                <p>Function Calling 是模型层面的能力，MCP 是协议层面的标准。两者的关系：</p>
+                <ul>
+                    <li><strong>Function Calling</strong>：定义了 LLM 如何生成工具调用参数和处理返回结果</li>
+                    <li><strong>MCP</strong>：定义了 AI 应用如何发现和连接外部工具服务</li>
+                    <li><strong>实际使用</strong>：MCP Server 暴露工具定义 → AI 应用将其转换为 Function Calling 格式 → LLM 生成调用 → 通过 MCP 协议执行</li>
+                </ul>
+                <p>简单说：Function Calling 是"LLM 怎么调工具"，MCP 是"工具怎么被发现和连接"。</p>
+                <blockquote>Function Calling 是 AI Agent 的基石能力。掌握了它，你就理解了 Agent 如何与真实世界交互。我的 <a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub 仓库</a> 中有 4 篇工具与 Function Calling 的深度笔记，覆盖机制原理、MCP Server 开发、工具编排与安全。</blockquote>
+            `
+        },
         {
             id: "agent-security-prompt-injection",
             title: "Agent 安全实战：Prompt 注入、记忆投毒与纵深防御",
@@ -1082,6 +1341,21 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         initBackBtn();
         initBackToTop();
         document.getElementById('footerText').textContent = `© ${new Date().getFullYear()} Walter's Tech Blog | Powered by GitHub Pages`;
+        // 处理 URL 参数
+        const params = new URLSearchParams(location.search);
+        const tagParam = params.get('tag');
+        if (tagParam) {
+            activeTag = tagParam;
+            document.querySelectorAll('#tagFilter .badge').forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-pressed', 'false');
+                if (b.dataset.tag === tagParam) {
+                    b.classList.add('active');
+                    b.setAttribute('aria-pressed', 'true');
+                }
+            });
+            renderPostList();
+        }
         if (location.hash) {
             const post = posts.find(p => p.id === location.hash.slice(1));
             if (post) showDetail(post);
@@ -1170,6 +1444,9 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
             b.classList.add('active');
             b.setAttribute('aria-pressed', 'true');
             activeTag = b.dataset.tag || null;
+            const url = new URL(location);
+            if (activeTag) { url.searchParams.set('tag', activeTag); } else { url.searchParams.delete('tag'); }
+            history.replaceState(null, '', url);
             renderPostList();
         }
         el.addEventListener('click', e => handleFilter(e.target.closest('.badge')));
@@ -1237,6 +1514,28 @@ context = system_prompt + relevant_docs + recent_history + active_tools</code></
         document.getElementById('detailTitle').focus();
         addCopyButtons();
         renderPostNav(post);
+        renderTOC();
+    }
+
+    /* ---------- 文章目录 (TOC) ---------- */
+    function renderTOC() {
+        const body = document.getElementById('detailBody');
+        const headings = body.querySelectorAll('h2');
+        if (headings.length < 2) return;
+        headings.forEach((h, i) => { h.id = h.id || 'heading-' + i; });
+        const toc = document.createElement('nav');
+        toc.className = 'post-toc';
+        toc.setAttribute('aria-label', '文章目录');
+        toc.innerHTML = '<div class="toc-title">📑 目录</div>' +
+            [...headings].map(h => `<a href="#${h.id}" class="toc-link">${h.textContent}</a>`).join('');
+        body.insertBefore(toc, body.firstChild);
+        toc.querySelectorAll('.toc-link').forEach(a => {
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById(a.getAttribute('href').slice(1))
+                    .scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
     }
 
     /* ---------- 代码块复制按钮 ---------- */

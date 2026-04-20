@@ -9,6 +9,26 @@
     <atom:link href="https://walterhandsome.github.io/rss.xml" rel="self" type="application/rss+xml"/>
 
     <item>
+      <title>Vibe Coding 时代：用自然语言构建应用的完整指南</title>
+      <link>https://walterhandsome.github.io/#vibe-coding-era</link>
+      <guid>https://walterhandsome.github.io/#vibe-coding-era</guid>
+      <pubDate>Mon, 20 Apr 2026 00:00:00 +0800</pubDate>
+      <description>Andrej Karpathy 提出的 Vibe Coding 正在让"人人都是开发者"成为现实。从 Replit 到 Bolt.new，一文搞懂 Vibe Coding 工具生态、适用场景与局限性。</description>
+      <category>Vibe Coding</category>
+      <category>Coding Agent</category>
+    </item>
+
+    <item>
+      <title>Function Calling 实战：让 LLM 操作真实世界</title>
+      <link>https://walterhandsome.github.io/#function-calling-in-action</link>
+      <guid>https://walterhandsome.github.io/#function-calling-in-action</guid>
+      <pubDate>Mon, 20 Apr 2026 00:00:00 +0800</pubDate>
+      <description>Function Calling 是 AI Agent 从"能说"到"能做"的关键技术。从 OpenAI 到 Claude 的实现差异，到并行调用、流式处理的生产级实践。</description>
+      <category>Function Calling</category>
+      <category>LLM</category>
+    </item>
+
+    <item>
       <title>Agent 安全实战：Prompt 注入、记忆投毒与纵深防御</title>
       <link>https://walterhandsome.github.io/#agent-security-prompt-injection</link>
       <guid>https://walterhandsome.github.io/#agent-security-prompt-injection</guid>

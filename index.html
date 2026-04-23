@@ -499,6 +499,335 @@
     // ================================================================
     const posts = [
         {
+            id: "vector-database-selection",
+            title: "向量数据库选型实战：pgvector vs Chroma vs Pinecone，选错了代价很大",
+            date: "2026-04-23",
+            tags: ["向量数据库", "RAG", "基础设施"],
+            excerpt: "向量数据库是 RAG 和 AI Agent 的核心基础设施，但六大主流方案各有取舍。这篇文章从实际场景出发，拆解 pgvector、Chroma、Pinecone、Qdrant、Milvus、Weaviate 的真实差异，帮你避开选型踩坑。",
+            body: `
+                <p>你搭了一个 RAG 系统，用 Chroma 存向量，Demo 跑得很顺。然后数据量从 1 万条涨到 100 万条，查询延迟从 50ms 飙到 2 秒，过滤条件一加就更慢——这时候你才意识到，<strong>向量数据库的选型在项目初期就决定了后期的天花板</strong>。</p>
+                <p>2026 年，向量数据库已经从 AI 应用的辅助工具演变为关键基础设施。市场上有六个主流选择，每个都有明确的定位和适用边界。这篇文章不做泛泛的功能罗列，而是从<strong>真实的工程决策场景</strong>出发，帮你搞清楚：什么时候该用哪个，为什么。</p>
+
+                <h2>先搞清楚：向量数据库在 RAG 中扮演什么角色</h2>
+                <p>在 RAG（检索增强生成）流程中，向量数据库处于核心位置——它负责存储文档的向量表示，并在用户查询时快速找到语义最相关的内容：</p>
+<pre><code>RAG 核心流程：
+
+文档 → 分块 → Embedding 模型 → 向量 → [向量数据库] ← 存储
+                                                    ↕
+用户查询 → Embedding → 相似度检索 → [向量数据库] → Top-K 结果 → LLM 生成回答</code></pre>
+                <p>向量数据库的性能直接决定了三件事：<strong>检索速度</strong>（用户等多久）、<strong>检索质量</strong>（找到的内容是否相关）、<strong>可扩展性</strong>（数据量增长后还能不能用）。选错了，后期迁移的成本远比你想象的高。</p>
+
+                <h2>六大主流方案一览</h2>
+                <p>先看全景，再逐个拆解：</p>
+<pre><code>| 方案       | 类型       | 实现语言  | 混合搜索 | 扩展性 | 适用场景         |
+|-----------|-----------|----------|---------|-------|-----------------|
+| Chroma    | 嵌入式     | Python   | ❌      | 单机   | 原型开发、小数据量 |
+| pgvector  | PG 扩展    | C        | 有限    | 单机   | 已有 PostgreSQL  |
+| Pinecone  | 全托管 SaaS | -       | ✅      | 自动   | 零运维、生产 SaaS |
+| Qdrant    | 自托管/云   | Rust    | ✅      | 水平   | 高性能生产环境    |
+| Milvus    | 自托管/云   | Go/C++  | ✅      | 水平   | 亿级大规模数据    |
+| Weaviate  | 自托管/云   | Go      | ✅      | 水平   | 语义搜索、多模态  |</code></pre>
+                <p>接下来按"从简单到复杂"的顺序，逐个分析它们的核心特点和适用边界。</p>
+
+                <h2>Chroma：原型阶段的最佳选择</h2>
+                <p>Chroma 是一个嵌入式向量数据库，用 Python 写的，零配置，<code>pip install chromadb</code> 就能用。它的定位很明确：<strong>让你在 5 分钟内跑通 RAG 流程</strong>。</p>
+<pre><code>import chromadb
+from chromadb.utils import embedding_functions
+
+# 创建持久化客户端
+client = chromadb.PersistentClient(path="./chroma_db")
+
+# 使用 OpenAI Embedding
+ef = embedding_functions.OpenAIEmbeddingFunction(
+    api_key="sk-xxx",
+    model_name="text-embedding-3-small",
+)
+
+# 创建集合
+collection = client.get_or_create_collection(
+    name="documents",
+    embedding_function=ef,
+    metadata={"hnsw:space": "cosine"},  # 余弦距离
+)
+
+# 添加文档（自动向量化）
+collection.add(
+    documents=["AI Agent 是自主决策的智能系统", "RAG 结合检索与生成"],
+    metadatas=[{"source": "doc1"}, {"source": "doc2"}],
+    ids=["id1", "id2"],
+)
+
+# 查询
+results = collection.query(query_texts=["什么是 Agent"], n_results=3)</code></pre>
+                <p><strong>优势</strong>：学习曲线极低，嵌入式运行无需部署，自动处理 Embedding，适合教学和快速验证想法。</p>
+                <p><strong>局限</strong>：不支持混合搜索（向量 + 关键词），单机架构无法水平扩展，元数据过滤能力有限。当数据量超过 10 万条或需要复杂过滤时，性能会明显下降。</p>
+                <blockquote>适用场景：个人项目、Demo 演示、教学、数据量 < 10 万条的小型应用。不适合生产环境。</blockquote>
+
+                <h2>pgvector：已有 PostgreSQL 就用它</h2>
+                <p>pgvector 是 PostgreSQL 的向量搜索扩展。如果你的项目已经在用 PostgreSQL，它是最务实的选择——<strong>不需要引入新的数据库组件</strong>，一个 <code>CREATE EXTENSION vector</code> 就搞定。</p>
+<pre><code>-- 启用扩展
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- 创建表（向量和业务数据在同一张表）
+CREATE TABLE documents (
+    id SERIAL PRIMARY KEY,
+    content TEXT,
+    metadata JSONB,
+    embedding vector(1536)  -- 1536 维向量
+);
+
+-- 创建 HNSW 索引（推荐，比 IVFFlat 更快）
+CREATE INDEX ON documents
+USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+
+-- 相似度搜索 + SQL 过滤（这是 pgvector 的杀手锏）
+SELECT content,
+       1 - (embedding &lt;=&gt; query_vector::vector) AS similarity
+FROM documents
+WHERE metadata-&gt;&gt;'category' = 'ai-agent'
+  AND created_at &gt; '2026-01-01'
+ORDER BY embedding &lt;=&gt; query_vector::vector
+LIMIT 5;</code></pre>
+                <p><strong>杀手锏</strong>：向量搜索和 SQL 查询在同一个事务中完成。你可以用 <code>WHERE</code>、<code>JOIN</code>、<code>GROUP BY</code> 等所有 SQL 能力来过滤和聚合向量搜索结果，这是专用向量数据库做不到的。</p>
+                <p><strong>局限</strong>：单机架构，向量规模超过千万级后性能下降明显。混合搜索（向量 + 全文检索）需要额外配置 <code>tsvector</code>，不如 Qdrant/Weaviate 原生支持来得方便。</p>
+                <blockquote>适用场景：已有 PostgreSQL 基础设施、数据量 < 500 万条、需要向量搜索与业务查询联动的场景。</blockquote>
+
+                <h2>Pinecone：花钱买省心</h2>
+                <p>Pinecone 是唯一的纯 SaaS 全托管方案。你不需要管服务器、不需要调参数、不需要操心扩容——<strong>给钱就行</strong>。</p>
+                <p>它的核心价值不在于性能最强（不是），而在于<strong>运维成本为零</strong>。对于没有专职基础设施团队的创业公司或 SaaS 产品，这个价值是实打实的。</p>
+                <p><strong>优势</strong>：全托管零运维，自动扩展，支持混合搜索（稠密 + 稀疏向量），Serverless 模式按用量计费，适合流量波动大的场景。</p>
+                <p><strong>局限</strong>：数据存在第三方（合规敏感行业可能不接受），成本随数据量线性增长（大规模场景下比自托管贵很多），供应商锁定风险。</p>
+                <blockquote>适用场景：创业公司、SaaS 产品、没有基础设施团队、对数据合规要求不高的场景。</blockquote>
+
+                <h2>Qdrant：性能与易用性的平衡点</h2>
+                <p>Qdrant 用 Rust 实现，在性能和 API 易用性之间找到了很好的平衡。它是目前<strong>中等规模生产环境</strong>（百万到千万级向量）的最佳选择之一。</p>
+<pre><code>from qdrant_client import QdrantClient
+from qdrant_client.models import (
+    Distance, VectorParams, PointStruct,
+    Filter, FieldCondition, MatchValue,
+)
+
+client = QdrantClient(host="localhost", port=6333)
+
+# 创建集合（支持多向量字段）
+client.create_collection(
+    collection_name="knowledge_base",
+    vectors_config={
+        "dense": VectorParams(size=1536, distance=Distance.COSINE),
+    },
+    sparse_vectors_config={
+        "sparse": {},  # BM25 稀疏向量，用于关键词匹配
+    },
+)
+
+# 混合搜索：向量语义 + 关键词匹配 + 元数据过滤
+results = client.query_points(
+    collection_name="knowledge_base",
+    prefetch=[
+        {"query": dense_vector, "using": "dense", "limit": 20},
+        {"query": sparse_vector, "using": "sparse", "limit": 20},
+    ],
+    query={"fusion": "rrf"},  # Reciprocal Rank Fusion 融合排序
+    query_filter=Filter(must=[
+        FieldCondition(key="source", match=MatchValue(value="official_docs"))
+    ]),
+    limit=5,
+)</code></pre>
+                <p><strong>核心优势</strong>：Rust 实现带来的高性能和低内存占用；原生混合搜索（RRF 融合）；丰富的过滤条件（嵌套、范围、地理位置）；支持水平扩展。</p>
+                <p><strong>局限</strong>：社区规模不如 Milvus，企业级功能（RBAC、审计日志）需要付费版。</p>
+                <blockquote>适用场景：需要高性能 + 混合搜索的生产环境，数据量在百万到千万级，团队有基本的运维能力。</blockquote>
+
+                <h2>Milvus 和 Weaviate：大规模与多模态</h2>
+                <p>简要提两个适用于特定场景的方案：</p>
+                <ul>
+                    <li><strong>Milvus</strong>：分布式架构，支持 GPU 加速，专为<strong>亿级向量</strong>设计。如果你的数据量在千万级以上，Milvus 几乎是唯一的开源选择。代价是部署和运维复杂度高（依赖 etcd、MinIO、Pulsar 等组件）</li>
+                    <li><strong>Weaviate</strong>：模块化架构，原生支持<strong>多模态</strong>（文本、图片、音频的向量可以存在同一个集合中）。如果你的应用涉及图片搜索或跨模态检索，Weaviate 是最自然的选择</li>
+                </ul>
+
+                <h2>选型决策树：三个问题定方案</h2>
+                <p>不需要看完所有文档，回答三个问题就能锁定方案：</p>
+<pre><code>问题 1：你现在是什么阶段？
+├── 原型验证 / 学习
+│   └── → Chroma（零配置，5 分钟上手）
+└── 生产环境
+    │
+    问题 2：你已有什么基础设施？
+    ├── 已有 PostgreSQL，数据量 < 500 万
+    │   └── → pgvector（零新增组件）
+    ├── 不想管服务器
+    │   └── → Pinecone（全托管 SaaS）
+    └── 愿意自己部署
+        │
+        问题 3：数据规模多大？
+        ├── 百万 ~ 千万级
+        │   └── → Qdrant（性能 + 易用性最佳平衡）
+        └── 亿级以上
+            └── → Milvus（分布式，GPU 加速）</code></pre>
+                <p>这个决策树覆盖了 90% 的场景。剩下 10% 的特殊需求（多模态搜索选 Weaviate，GraphQL 生态选 Weaviate）按具体情况判断。</p>
+
+                <h2>混合搜索：生产环境的标配</h2>
+                <p>纯向量搜索有一个常被忽视的问题：<strong>它对精确关键词匹配不敏感</strong>。用户搜"MCP 协议"，向量搜索可能返回"Agent 通信标准"（语义相关但没提到 MCP），而漏掉标题就是"MCP 协议详解"的文档。</p>
+                <p>解决方案是混合搜索——同时使用<strong>稠密向量</strong>（语义匹配）和<strong>稀疏向量</strong>（关键词匹配），用 RRF（Reciprocal Rank Fusion）融合排序：</p>
+<pre><code>混合搜索流程：
+
+用户查询："MCP 协议的传输方式"
+    │
+    ├── 稠密向量检索（语义）→ 找到"Agent 工具连接标准"、"协议传输层设计"
+    │
+    ├── 稀疏向量检索（BM25）→ 找到"MCP 协议详解"、"MCP stdio 传输"
+    │
+    └── RRF 融合排序 → 综合排名，两种检索的优势互补
+                    → 最终结果既语义相关，又包含精确关键词匹配</code></pre>
+                <p>Qdrant、Pinecone、Weaviate、Milvus 都原生支持混合搜索。pgvector 需要手动组合 <code>vector</code> 和 <code>tsvector</code>。Chroma 不支持。这也是为什么<strong>生产环境不建议用 Chroma</strong>的重要原因之一。</p>
+
+                <h2>性能优化：三个立竿见影的技巧</h2>
+                <ol>
+                    <li><strong>选对索引类型</strong>：HNSW（Hierarchical Navigable Small World）是目前最主流的近似最近邻索引，在召回率和速度之间有很好的平衡。pgvector 中用 <code>CREATE INDEX USING hnsw</code>，Qdrant 和 Milvus 默认就是 HNSW</li>
+                    <li><strong>降维</strong>：OpenAI 的 <code>text-embedding-3-small</code> 输出 1536 维，但很多场景下降到 512 维或 256 维，召回率只下降 1-2%，而存储和查询速度提升 3-6 倍。Pinecone 和 Qdrant 都支持在查询时指定维度</li>
+                    <li><strong>预过滤 vs 后过滤</strong>：如果你的查询总是带元数据过滤条件（比如 <code>category = 'ai-agent'</code>），确保数据库在向量搜索<strong>之前</strong>就过滤掉不相关的数据（预过滤），而不是先搜索再过滤（后过滤）。Qdrant 和 Milvus 默认是预过滤，pgvector 需要注意查询计划</li>
+                </ol>
+
+                <h2>迁移成本：选型时最容易忽略的因素</h2>
+                <p>向量数据库的迁移成本比你想象的高。不只是数据搬迁——你还需要：</p>
+                <ul>
+                    <li>重新生成所有向量（如果 Embedding 模型或维度变了）</li>
+                    <li>重写所有查询逻辑（每个数据库的 API 完全不同）</li>
+                    <li>重新调优索引参数（HNSW 的 <code>m</code> 和 <code>ef</code> 参数在不同数据库上表现不同）</li>
+                    <li>重新做性能基准测试</li>
+                </ul>
+                <p>所以，<strong>选型时多花一天做调研，比上线后花一周做迁移划算得多</strong>。如果你不确定未来的数据规模，建议直接从 Qdrant 或 pgvector 开始，而不是从 Chroma 开始再迁移。</p>
+
+                <h2>写在最后</h2>
+                <p>向量数据库选型没有"最好的"，只有"最适合你当前场景的"。但有一条通用建议：<strong>不要在原型阶段做生产级的选型，也不要在生产环境用原型级的工具</strong>。</p>
+                <p>如果你刚开始学 RAG，用 Chroma 快速上手，理解核心流程。当你准备上生产时，根据团队的基础设施和数据规模，在 pgvector、Qdrant、Pinecone 中选一个。亿级数据才需要考虑 Milvus。</p>
+                <blockquote>我的 <a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub 仓库</a> 中有完整的向量数据库选型笔记和 RAG 进阶系列（4 篇），覆盖 RAG 架构、向量数据库对比、高级检索策略和 GraphRAG，以及可运行的 <a href="https://github.com/WalterHandsome/tech-learning-and-projects/tree/main/rag-llm-agent-platform" target="_blank" rel="noopener noreferrer">RAG + LLM Agent 平台</a> 实战项目。</blockquote>
+            `
+        },
+        {
+            id: "what-is-ai-agent",
+            title: "AI Agent 是什么：从概念到落地的完整指南",
+            date: "2026-04-22",
+            tags: ["AI Agent", "入门指南", "Agentic 设计模式"],
+            excerpt: "AI Agent 不是更聪明的 Chatbot，而是能自主规划、使用工具、持续执行的智能系统。这篇文章从核心概念出发，拆解 Agent 的四大能力、六种设计模式和三条架构路径，帮你建立完整的认知框架。",
+            body: `
+                <p>2025 年底开始，"AI Agent"成了技术圈出现频率最高的词之一。但如果你去问十个人"AI Agent 到底是什么"，大概率会得到十个不同的答案。有人说它是更高级的 Chatbot，有人说它是能自己写代码的 AI，还有人觉得它就是 AutoGPT 那样的自动化脚本。</p>
+                <p>这些理解都不算错，但都不完整。这篇文章试图给你一个<strong>从概念到落地的完整认知框架</strong>——AI Agent 的本质是什么、它由哪些能力构成、有哪些设计模式、以及你该怎么选择技术方案。</p>
+
+                <h2>Agent 不是 Chatbot</h2>
+                <p>先厘清一个最常见的误解。Chatbot 和 Agent 的核心区别不在于"聪不聪明"，而在于<strong>控制权在谁手里</strong>：</p>
+<pre><code>Chatbot：用户提问 → 模型回答（单轮/多轮对话）
+         控制权始终在用户手中，每一步都需要用户驱动
+
+AI Agent：用户设定目标 → 规划 → 使用工具 → 执行 → 验证 → 反馈
+          控制权交给 Agent，它自主决定下一步做什么</code></pre>
+                <p>举个例子：你对 ChatGPT 说"帮我分析上个月的销售数据"，它会告诉你分析方法，但不会真的去拿数据。而一个 Agent 会自己连接数据库、执行 SQL 查询、生成图表、写出分析报告——你只需要提出目标，剩下的它来搞定。</p>
+                <p>用一句话概括：<strong>Chatbot 是问答机器，Agent 是任务执行者。</strong></p>
+
+                <h2>Agent 的四大核心能力</h2>
+                <p>一个完整的 AI Agent 系统由四个能力模块构成，缺一不可：</p>
+<pre><code>┌─────────────────────────────────────┐
+│            AI Agent                  │
+├──────────┬──────────┬───────────────┤
+│  感知     │  决策     │  执行         │
+│Perception│Reasoning │ Action        │
+├──────────┼──────────┼───────────────┤
+│ 用户输入  │ 任务分解  │ 工具调用       │
+│ 环境状态  │ 规划推理  │ API 请求       │
+│ 工具反馈  │ 工具选择  │ 代码执行       │
+│ 记忆检索  │ 反思纠错  │ 文件操作       │
+└──────────┴──────────┴───────────────┘
+         ↕ 记忆系统（Memory）↕</code></pre>
+                <ul>
+                    <li><strong>感知（Perception）</strong>：Agent 接收信息的能力。不只是用户的文字输入，还包括工具返回的结果、环境状态变化、从记忆中检索到的历史信息</li>
+                    <li><strong>决策（Reasoning）</strong>：Agent 的"大脑"。基于 LLM 的推理能力，完成任务分解、规划路径、选择工具、判断何时需要人工介入</li>
+                    <li><strong>执行（Action）</strong>：Agent 的"手脚"。通过 Function Calling 调用外部工具、API、数据库，在真实世界中产生效果</li>
+                    <li><strong>记忆（Memory）</strong>：Agent 的"经验"。短期记忆维护当前对话上下文，长期记忆积累跨会话的经验和知识</li>
+                </ul>
+                <p>这四个能力的基座是<strong>增强型 LLM（Augmented LLM）</strong>——不是裸模型，而是 LLM + 检索（RAG）+ 工具（Tools）+ 记忆（Memory）的组合体。所有 Agent 框架的底层都是在这个基座上构建的。</p>
+
+                <h2>Agent 的三种范式</h2>
+                <p>从简单到复杂，Agent 的执行范式可以分为三层：</p>
+                <h3>1. ReAct：推理 + 行动交替</h3>
+                <p>最经典的 Agent 范式。LLM 交替进行推理（Thought）和行动（Action），观察结果后继续，直到任务完成：</p>
+<pre><code>Thought: 用户要查订单，我需要调用订单查询 API
+Action:  query_orders(user_id="123")
+Observation: [返回 3 个订单...]
+Thought: 找到了，最近一个订单是 4 月 20 日的
+Answer:  您最近的订单是 4 月 20 日下单的...</code></pre>
+                <p>ReAct 的优势是简单直观，LangGraph 的 <code>create_react_agent</code> 一行代码就能创建。但它的问题是<strong>没有全局规划</strong>——Agent 走一步看一步，遇到复杂任务容易跑偏。</p>
+
+                <h3>2. Plan-and-Execute：先规划再执行</h3>
+                <p>先让 LLM 制定完整计划，再逐步执行，执行过程中可以根据结果修订计划：</p>
+<pre><code>1. 制定计划（将复杂任务分解为子任务列表）
+2. 逐步执行每个子任务
+3. 根据执行结果调整计划
+4. 汇总结果</code></pre>
+                <p>适合多步骤、有依赖关系的复杂任务。代价是多了一次"规划"的 LLM 调用，但换来了更高的任务完成率。</p>
+
+                <h3>3. 多 Agent 协作：专业分工</h3>
+                <p>把一个复杂任务拆给多个专业 Agent，每个 Agent 扮演特定角色，协作完成。这是当前最热门的方向，CrewAI 和 LangGraph 都在这个领域深耕。</p>
+
+                <h2>六种 Agentic 设计模式</h2>
+                <p>Anthropic 在 "Building Effective Agents" 指南中，将 Agentic 系统分为 <strong>Workflow（预定义流程）</strong>和 <strong>Agent（自主决策）</strong>两大类，并总结了六种核心设计模式：</p>
+                <ol>
+                    <li><strong>Prompt Chaining（提示链）</strong>：顺序调用 LLM，前一步输出作为后一步输入。最简单，适合线性流程</li>
+                    <li><strong>Routing（路由分发）</strong>：对输入分类，路由到不同的专业处理器。适合多类型请求的统一入口</li>
+                    <li><strong>Parallelization（并行化）</strong>：将任务拆分为独立子任务并行处理，或多次生成后投票取最优。适合可并行的场景</li>
+                    <li><strong>Orchestrator-Workers（编排-工作者）</strong>：中央编排 LLM 动态分解任务，委派给工作者执行。适合任务结构不确定的场景</li>
+                    <li><strong>Evaluator-Optimizer（评估-优化）</strong>：一个 LLM 生成，另一个评估，循环迭代直到满足标准。适合需要高质量输出的场景</li>
+                    <li><strong>Autonomous Agent（自主 Agent）</strong>：ReAct 循环，Agent 自主决定使用工具直到完成任务。灵活性最高，但最难控制</li>
+                </ol>
+                <p>Anthropic 的核心建议是：<strong>从简单开始，仅在必要时增加复杂度。</strong>能用 Prompt Chaining 解决的问题，不要上多 Agent。</p>
+                <blockquote>选择设计模式的决策路径：需求明确、流程固定？→ Workflow。需要动态决策？→ Agent。不确定？→ 从最简单的 Prompt Chaining 开始。</blockquote>
+
+                <h2>三条架构路径：你的 Agent 该有多"自主"</h2>
+                <p>2026 年 4 月的一篇论文 "The Cartesian Cut in Agentic AI" 从认知科学视角提出了 Agent 架构的三条设计路径，核心问题是：<strong>控制权应该放在哪里？</strong></p>
+<pre><code>Agent 架构的三条路径（自主性递增）：
+
+Bounded Services        Cartesian Agents       Integrated Agents
+（有界服务）             （笛卡尔 Agent）        （集成 Agent）
+
+LLM 输出受严格约束       LLM 与运行时通过         LLM 与运行时深度融合
+运行时完全控制执行流      符号接口耦合             控制状态内化
+
+自主性：低               自主性：中              自主性：高
+鲁棒性：高               鲁棒性：中              鲁棒性：低
+可监督：容易             可监督：中等             可监督：困难
+
+典型：RAG 管道           典型：LangGraph          典型：端到端 RL Agent
+     结构化输出 API            CrewAI                  未来方向
+                              OpenAI SDK</code></pre>
+                <p>当前主流 Agent 框架几乎都属于中间的 <strong>Cartesian Agents</strong> 路径——通过工具调用、状态管理等符号接口将 LLM 和运行时连接起来。这带来了模块化和可审计性（你可以检查每一步工具调用），但也引入了接口瓶颈（所有信息必须通过文本序列化传递）。</p>
+                <p>对于大多数生产场景，Cartesian Agents 是当前最务实的选择。Bounded Services 适合高可靠性要求的场景（如金融合规），Integrated Agents 目前还停留在研究阶段。</p>
+
+                <h2>Agent 技术栈全景</h2>
+                <p>2026 年的 Agent 生态已经相当成熟，从协议到框架到基础设施形成了完整的技术栈：</p>
+                <ul>
+                    <li><strong>协议层</strong>：MCP（工具连接标准）、A2A（Agent 间通信）、ACP（轻量级消息协议）</li>
+                    <li><strong>框架层</strong>：LangGraph（图结构工作流）、CrewAI（角色化多 Agent）、OpenAI Agents SDK（Swarm 模式）</li>
+                    <li><strong>能力层</strong>：RAG（知识检索）、Function Calling（工具调用）、Memory（记忆系统）</li>
+                    <li><strong>基础设施</strong>：向量数据库、模型服务、可观测性平台、安全治理</li>
+                </ul>
+                <p>如果你刚入门，建议的学习路径是：<strong>LLM 基础 → Prompt Engineering → Function Calling → RAG → 单 Agent（ReAct）→ 多 Agent 协作 → 生产化部署</strong>。</p>
+
+                <h2>从 Demo 到生产：五个关键问题</h2>
+                <p>搭一个 Agent Demo 很容易，但要上生产，你需要回答这五个问题：</p>
+                <ol>
+                    <li><strong>成本</strong>：每次 Agent 执行消耗多少 Token？多 Agent 场景下成本会指数级增长。用 <code>max_iter</code> 限制迭代次数，用缓存减少重复调用</li>
+                    <li><strong>可靠性</strong>：Agent 跑偏了怎么办？设置 Guardrails（护栏）做输入输出检查，关键操作加 Human-in-the-Loop（人工审批）</li>
+                    <li><strong>可观测性</strong>：Agent 做了什么、为什么这么做？集成 LangSmith 或类似平台，记录每一步的推理过程和工具调用</li>
+                    <li><strong>安全</strong>：Prompt 注入、工具滥用、数据泄露怎么防？输入过滤、权限最小化、敏感操作审批是基本功</li>
+                    <li><strong>状态管理</strong>：用户中途离开怎么办？用 Checkpointer 做状态持久化，支持断点续传</li>
+                </ol>
+
+                <h2>写在最后</h2>
+                <p>AI Agent 不是一个单一的技术，而是一套<strong>将 LLM 从"对话工具"升级为"任务执行系统"的方法论</strong>。它的核心价值在于：让 AI 不只是回答问题，而是真正替你完成工作。</p>
+                <p>但也不要被"自主"这个词迷惑——当前阶段，最好的 Agent 不是最自主的，而是<strong>在合适的地方自主、在关键的地方受控</strong>的。Anthropic 说得好：从简单开始，仅在必要时增加复杂度。</p>
+                <blockquote>想深入学习？我的 <a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub 仓库</a> 中有 400+ 篇 AI Agent 学习笔记，覆盖基础概念、设计模式、框架实战、协议标准、安全治理等完整知识体系，从入门到生产级开发一站式覆盖。</blockquote>
+            `
+        },
+        {
             id: "crewai-multi-agent-collaboration",
             title: "CrewAI 多 Agent 协作实战：让 AI 团队替你干活",
             date: "2026-04-21",

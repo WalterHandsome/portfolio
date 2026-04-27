@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Walter's Tech Briefing - AI Agent、国内科技、国际科技每日简报">
+    <meta name="author" content="Walter">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+    <link rel="stylesheet" href="shared.css">
+    <title>每日简报 — Walter's Tech Blog</title>
+    <style>
+        .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+        /* 页面头部 */
+        .briefing-hero {
+            padding: 48px 0 32px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .briefing-hero h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .briefing-hero p { font-size: 14px; color: var(--text-secondary); }
+
+        /* 主题选择器 */
+        .topic-tabs {
+            display: flex; gap: 8px; margin: 24px 0 16px;
+            flex-wrap: wrap;
+        }
+        .topic-tab {
+            padding: 8px 18px; border-radius: 20px; font-size: 14px;
+            border: 1px solid var(--border-color); background: var(--card-bg);
+            color: var(--text-secondary); cursor: pointer;
+            transition: var(--transition); font-weight: 500;
+        }
+        .topic-tab:hover { border-color: var(--primary); color: var(--primary); }
+        .topic-tab.active {
+            background: var(--primary); color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* 日期列表 */
+        .date-list {
+            display: flex; gap: 6px; margin-bottom: 24px;
+            overflow-x: auto; padding-bottom: 4px;
+            scrollbar-width: thin;
+        }
+        .date-item {
+            padding: 6px 14px; border-radius: 8px; font-size: 13px;
+            border: 1px solid var(--border-color); background: var(--card-bg);
+            color: var(--text-secondary); cursor: pointer;
+            transition: var(--transition); white-space: nowrap; flex-shrink: 0;
+        }
+        .date-item:hover { border-color: var(--primary); color: var(--primary); }
+        .date-item.active {
+            background: var(--badge-bg); color: var(--primary);
+            border-color: var(--primary); font-weight: 500;
+        }
+
+        /* 简报内容区 */
+        .briefing-content {
+            background: var(--card-bg); border-radius: 14px;
+            border: 1px solid var(--border-color);
+            padding: 32px; margin-bottom: 40px;
+            min-height: 300px;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center; padding: 60px 0;
+            color: var(--text-tertiary); font-size: 15px;
+        }
+        .loading .spinner {
+            display: inline-block; width: 24px; height: 24px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-msg {
+            text-align: center; padding: 60px 0;
+            color: var(--text-tertiary); font-size: 15px;
+        }
+        .error-msg .error-icon { font-size: 36px; margin-bottom: 12px; display: block; }
+
+        /* Markdown 渲染样式 */
+        .md-body { font-size: 15px; color: var(--text-secondary); line-height: 1.8; }
+        .md-body h1 {
+            font-size: 24px; font-weight: 700; color: var(--text-primary);
+            margin: 0 0 20px; padding-bottom: 12px;
+            border-bottom: 2px solid var(--primary);
+        }
+        .md-body h2 {
+            font-size: 20px; font-weight: 700; color: var(--text-primary);
+            margin: 32px 0 14px; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .md-body h3 {
+            font-size: 17px; font-weight: 600; color: var(--text-primary);
+            margin: 24px 0 10px;
+        }
+        .md-body p { margin-bottom: 14px; }
+        .md-body ul, .md-body ol { margin: 0 0 14px 20px; }
+        .md-body li { margin-bottom: 6px; line-height: 1.7; }
+        .md-body strong { color: var(--text-primary); }
+        .md-body a {
+            color: var(--primary); text-decoration: none;
+            border-bottom: 1px solid transparent;
+        }
+        .md-body a:hover { border-bottom-color: var(--primary); }
+        .md-body code {
+            background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px;
+            font-size: 0.88em; font-family: "SF Mono","Fira Code",monospace;
+            color: var(--primary);
+        }
+        .md-body pre {
+            background: var(--bg-secondary); padding: 16px; border-radius: 10px;
+            overflow-x: auto; margin-bottom: 16px;
+            border: 1px solid var(--border-color); line-height: 1.5;
+        }
+        .md-body pre code {
+            background: none; padding: 0; color: var(--text-primary); font-size: 13px;
+        }
+        .md-body blockquote {
+            border-left: 4px solid var(--primary); padding: 12px 16px;
+            background: var(--bg-secondary); border-radius: 0 10px 10px 0;
+            margin: 16px 0; color: var(--text-secondary); font-style: italic;
+        }
+        .md-body blockquote p:last-child { margin-bottom: 0; }
+        .md-body table {
+            width: 100%; border-collapse: collapse; margin: 16px 0;
+            font-size: 14px; overflow-x: auto; display: block;
+        }
+        .md-body th, .md-body td {
+            padding: 10px 14px; border: 1px solid var(--border-color);
+            text-align: left; white-space: nowrap;
+        }
+        .md-body th {
+            background: var(--bg-secondary); font-weight: 600;
+            color: var(--text-primary);
+        }
+        .md-body hr {
+            border: none; border-top: 1px solid var(--border-color);
+            margin: 24px 0;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .briefing-content { padding: 20px; }
+            .md-body h1 { font-size: 20px; }
+            .md-body h2 { font-size: 18px; }
+            .md-body table { font-size: 12px; }
+            .md-body th, .md-body td { padding: 6px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">跳转到主内容</a>
+
+    <nav class="navbar" aria-label="主导航">
+        <div class="navbar-inner">
+            <a class="navbar-brand" href="index.html">⚡ Walter's Tech Blog</a>
+            <ul class="navbar-links">
+                <li><a href="index.html">博客</a></li>
+                <li><a href="briefing.html" class="active" aria-current="page">简报</a></li>
+                <li><a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
+            </ul>
+            <div style="display:flex;gap:8px;align-items:center">
+                <button class="menu-toggle" id="menuToggle" aria-label="打开导航菜单" aria-expanded="false">☰</button>
+                <button class="theme-toggle" id="themeToggle" title="切换主题" aria-label="切换主题">🌙</button>
+            </div>
+        </div>
+        <ul class="mobile-nav" id="mobileNav">
+            <li><a href="index.html">博客</a></li>
+            <li><a href="briefing.html" aria-current="page">简报</a></li>
+            <li><a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
+        </ul>
+    </nav>
+
+    <section class="briefing-hero">
+        <div class="container">
+            <h1>📰 每日技术简报</h1>
+            <p>AI Agent · 国内科技 · 国际科技 — 每日精选，自动采集</p>
+        </div>
+    </section>
+
+    <main class="container" id="main-content">
+        <div class="topic-tabs" id="topicTabs">
+            <button class="topic-tab active" data-topic="ai-agent">🤖 AI Agent</button>
+            <button class="topic-tab" data-topic="china-tech">🇨🇳 国内科技</button>
+            <button class="topic-tab" data-topic="global-tech">🌍 国际科技</button>
+        </div>
+        <div class="date-list" id="dateList"></div>
+        <div class="briefing-content" id="briefingContent">
+            <div class="loading"><div class="spinner"></div><br>加载中...</div>
+        </div>
+    </main>
+
+    <footer>
+        <p>📰 简报数据来自 <a href="https://github.com/WalterHandsome/tech-learning-and-projects" target="_blank" style="color:var(--primary);text-decoration:none">tech-learning-and-projects</a></p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        const REPO = 'WalterHandsome/tech-learning-and-projects';
+        const BRANCH = 'main';
+        const BASE = `https://api.github.com/repos/${REPO}/contents/learning-notes/briefings`;
+        const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/learning-notes/briefings`;
+
+        let currentTopic = 'ai-agent';
+        let currentDate = null;
+        let dateCache = {};
+        let contentCache = {};
+
+        const topicTabs = document.getElementById('topicTabs');
+        const dateList = document.getElementById('dateList');
+        const content = document.getElementById('briefingContent');
+
+        // ========== URL hash 路由 ==========
+        function parseHash() {
+            const h = location.hash.slice(1);
+            if (!h) return null;
+            const [t, d] = h.split('/');
+            if (t && ['ai-agent','china-tech','global-tech'].includes(t)) {
+                return { topic: t, date: d || null };
+            }
+            return null;
+        }
+
+        function updateHash(topic, date) {
+            const h = date ? `${topic}/${date}` : topic;
+            if (location.hash !== '#' + h) history.replaceState(null, '', '#' + h);
+        }
+
+        // ========== 获取日期列表 ==========
+        async function fetchDates(topic) {
+            if (dateCache[topic]) return dateCache[topic];
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const dates = [];
+
+            // 扫描最近 3 个月
+            for (let m = month; m >= Math.max(1, month - 2); m--) {
+                const mm = String(m).padStart(2, '0');
+                try {
+                    const resp = await fetch(`${BASE}/${topic}/${year}/${mm}`, {
+                        headers: { 'Accept': 'application/vnd.github.v3+json' }
+                    });
+                    if (!resp.ok) continue;
+                    const files = await resp.json();
+                    for (const f of files) {
+                        const match = f.name.match(/^(\d{4}-\d{2}-\d{2})\.md$/);
+                        if (match) dates.push(match[1]);
+                    }
+                } catch(e) { /* 忽略 */ }
+            }
+
+            dates.sort((a, b) => b.localeCompare(a));
+            dateCache[topic] = dates;
+            return dates;
+        }
+
+        // ========== 获取简报内容 ==========
+        async function fetchContent(topic, date) {
+            const key = `${topic}/${date}`;
+            if (contentCache[key]) return contentCache[key];
+
+            const [y, m] = date.split('-');
+            const url = `${RAW_BASE}/${topic}/${y}/${m}/${date}.md`;
+            const resp = await fetch(url);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const md = await resp.text();
+            contentCache[key] = md;
+            return md;
+        }
+
+        // ========== 渲染 ==========
+        function renderMarkdown(md) {
+            md = md.replace(/<!--[\s\S]*?-->/g, '');
+            md = md.replace(/^---[\s\S]*?---\n*/m, '');
+            return marked.parse(md, { breaks: true, gfm: true });
+        }
+
+        function renderDates(dates, activeDate) {
+            dateList.innerHTML = '';
+            for (const d of dates.slice(0, 14)) {
+                const btn = document.createElement('button');
+                btn.className = 'date-item' + (d === activeDate ? ' active' : '');
+                btn.textContent = d.slice(5); // MM-DD
+                btn.title = d;
+                btn.onclick = () => loadContent(currentTopic, d);
+                dateList.appendChild(btn);
+            }
+        }
+
+        async function loadContent(topic, date) {
+            currentTopic = topic;
+            currentDate = date;
+            updateHash(topic, date);
+
+            topicTabs.querySelectorAll('.topic-tab').forEach(t =>
+                t.classList.toggle('active', t.dataset.topic === topic));
+            dateList.querySelectorAll('.date-item').forEach(d =>
+                d.classList.toggle('active', d.title === date));
+
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><br>加载中...</div>';
+
+            try {
+                const md = await fetchContent(topic, date);
+                content.innerHTML = '<div class="md-body">' + renderMarkdown(md) + '</div>';
+            } catch(e) {
+                content.innerHTML = `<div class="error-msg">
+                    <span class="error-icon">😕</span>加载失败，请稍后重试
+                    <br><small style="color:var(--text-tertiary)">${e.message}</small></div>`;
+            }
+        }
+
+        async function switchTopic(topic) {
+            currentTopic = topic;
+            topicTabs.querySelectorAll('.topic-tab').forEach(t =>
+                t.classList.toggle('active', t.dataset.topic === topic));
+
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><br>加载日期列表...</div>';
+
+            try {
+                const dates = await fetchDates(topic);
+                if (dates.length === 0) {
+                    dateList.innerHTML = '';
+                    content.innerHTML = '<div class="error-msg"><span class="error-icon">📭</span>暂无简报数据</div>';
+                    updateHash(topic, null);
+                    return;
+                }
+                const target = currentDate && dates.includes(currentDate) ? currentDate : dates[0];
+                renderDates(dates, target);
+                await loadContent(topic, target);
+            } catch(e) {
+                content.innerHTML = `<div class="error-msg">
+                    <span class="error-icon">😕</span>加载失败<br><small>${e.message}</small></div>`;
+            }
+        }
+
+        // ========== 事件 ==========
+        topicTabs.addEventListener('click', e => {
+            const tab = e.target.closest('.topic-tab');
+            if (tab) { currentDate = null; switchTopic(tab.dataset.topic); }
+        });
+
+        // 主题切换
+        const themeToggle = document.getElementById('themeToggle');
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('theme', theme);
+        }
+        themeToggle.addEventListener('click', () => {
+            const cur = document.documentElement.getAttribute('data-theme')
+                || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+            applyTheme(cur === 'dark' ? 'light' : 'dark');
+        });
+        const saved = localStorage.getItem('theme');
+        if (saved) applyTheme(saved);
+
+        // 汉堡菜单
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            const nav = document.getElementById('mobileNav');
+            const open = nav.classList.toggle('open');
+            document.getElementById('menuToggle').setAttribute('aria-expanded', open);
+        });
+
+        // 初始化
+        const hashState = parseHash();
+        if (hashState) { currentTopic = hashState.topic; currentDate = hashState.date; }
+        switchTopic(currentTopic);
+
+        window.addEventListener('hashchange', () => {
+            const s = parseHash();
+            if (s && (s.topic !== currentTopic || s.date !== currentDate)) {
+                currentDate = s.date;
+                switchTopic(s.topic);
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

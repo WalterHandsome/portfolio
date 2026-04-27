@@ -103,7 +103,7 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-4"><p class="scroll-hint">↓ 滚动或按方向键翻页</p></div>
   </div>
-  <span class="slide-number">01 / 13</span>
+  <span class="slide-number">01 / 14</span>
 </section>
 
 <!-- ===== SLIDE 2: Vibe Coding 的困境 ===== -->
@@ -119,7 +119,7 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-3"><div class="bottom-note">核心问题：AI 编码缺少<strong style="color:var(--red)">结构</strong>和<strong style="color:var(--red)">纪律</strong></div></div>
   </div>
-  <span class="slide-number">02 / 13</span>
+  <span class="slide-number">02 / 14</span>
 </section>
 
 <!-- ===== SLIDE 3: Kiro 是什么 ===== -->
@@ -137,7 +137,7 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-4"><div class="bottom-note">意图、规则、决策都版本化在仓库里</div></div>
   </div>
-  <span class="slide-number">03 / 13</span>
+  <span class="slide-number">03 / 14</span>
 </section>
 
 <!-- ===== SLIDE 4: 五大核心能力 ===== -->
@@ -154,11 +154,42 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-3"><div class="bottom-note">让 AI 编码从"随机对话"变成"可重复的工程实践"</div></div>
   </div>
-  <span class="slide-number">04 / 13</span>
+  <span class="slide-number">04 / 14</span>
 </section>
 
-<!-- ===== SLIDE 5: Steering 实战 ===== -->
+<!-- ===== SLIDE 5: 多层配置体系 ===== -->
 <section class="slide slide--radial" id="slide-5">
+  <div class="slide-content">
+    <div class="fade-up"><span class="tag tag--green">配置体系</span></div>
+    <div class="fade-up delay-1"><h2 class="section-title">全局 + 项目级的多层配置</h2></div>
+    <div class="fade-up delay-2"><p class="section-desc">Kiro 的配置分为全局（<code style="color:var(--blue);background:rgba(56,189,248,0.1);padding:0.15em 0.4em;border-radius:4px">~/.kiro/</code>）和项目级（<code style="color:var(--blue);background:rgba(56,189,248,0.1);padding:0.15em 0.4em;border-radius:4px">.kiro/</code>），全局配置跨项目生效，项目级配置针对特定仓库。</p></div>
+    <div class="grid-3 fade-up delay-3">
+      <div class="card" style="border-top:3px solid var(--blue)">
+        <div class="card-title" style="color:var(--blue);margin-bottom:0.8rem">🌐 全局 Steering</div>
+        <div class="card-text"><code>~/.kiro/steering/</code><br><br>
+          <strong style="color:#fff">language-chinese.md</strong><br>所有回复必须中文<br><br>
+          <strong style="color:#fff">work-methodology.md</strong><br>先想再写 / 最小必要 / 精准改动</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple)">
+        <div class="card-title" style="color:var(--purple);margin-bottom:0.8rem">🔌 全局 MCP & Powers</div>
+        <div class="card-text"><code>~/.kiro/settings/mcp.json</code><br><br>
+          <strong style="color:#fff">Notion MCP</strong> — 连接笔记系统<br><br>
+          <strong style="color:#fff">30 个 Powers</strong><br>AWS / Stripe / Terraform / Figma / Datadog 等</div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--orange)">
+        <div class="card-title" style="color:var(--orange);margin-bottom:0.8rem">🎯 全局 Skills</div>
+        <div class="card-text"><code>~/.kiro/skills/</code><br><br>
+          <strong style="color:#fff">飞书系列 20+</strong><br>文档/日历/审批/IM 等<br><br>
+          <strong style="color:#fff">通用 Skills</strong><br>代码简化 / 调试 / 增量实现 / 技术图表</div>
+      </div>
+    </div>
+    <div class="fade-up delay-4"><div class="bottom-note">全局配置 = 个人工作习惯 &nbsp;|&nbsp; 项目配置 = 团队协作规范 &nbsp;→&nbsp; 两层叠加，互不冲突</div></div>
+  </div>
+  <span class="slide-number">05 / 14</span>
+</section>
+
+<!-- ===== SLIDE 6: Steering 实战 ===== -->
+<section class="slide slide--grid" id="slide-6">
   <div class="slide-content">
     <div class="fade-up"><span class="tag">Steering 实战</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">把团队规范写进仓库</h2></div>
@@ -190,13 +221,13 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
 - 不臆造不存在的字段和 API</div>
       </div>
     </div>
-    <div class="fade-up delay-4"><div class="bottom-note">我们项目有 <strong style="color:var(--blue)">9 个 steering 文件</strong>，覆盖 Python / 前端 / 数据库 / 测试 / 重构</div></div>
+    <div class="fade-up delay-4"><div class="bottom-note">我们项目有 <strong style="color:var(--blue)">9 个 steering 文件</strong>（项目级）+ 全局 2 个，覆盖 Python / 前端 / 数据库 / 测试 / 重构</div></div>
   </div>
-  <span class="slide-number">05 / 13</span>
+  <span class="slide-number">06 / 14</span>
 </section>
 
-<!-- ===== SLIDE 6: Spec 实战 ===== -->
-<section class="slide slide--radial-purple" id="slide-6">
+<!-- ===== SLIDE 7: Spec 实战 ===== -->
+<section class="slide slide--radial-purple" id="slide-7">
   <div class="slide-content">
     <div class="fade-up"><span class="tag tag--purple">Spec 实战</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">需求 → 设计 → 任务：三阶段规格</h2></div>
@@ -225,11 +256,11 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
       </div>
     </div>
   </div>
-  <span class="slide-number">06 / 13</span>
+  <span class="slide-number">07 / 14</span>
 </section>
 
-<!-- ===== SLIDE 7: Spec 的价值 ===== -->
-<section class="slide slide--grid" id="slide-7">
+<!-- ===== SLIDE 8: Spec 的价值 ===== -->
+<section class="slide slide--grid" id="slide-8">
   <div class="slide-content">
     <div class="fade-up"><span class="tag tag--purple">Spec 价值</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">Spec 带来的价值</h2></div>
@@ -239,13 +270,13 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
       <div class="card"><div class="card-icon">🎯</div><div class="card-title">任务可拆分</div><div class="card-text">复杂功能被拆成离散任务，可逐步执行验证</div></div>
       <div class="card"><div class="card-icon">🐛</div><div class="card-title">Bug 也能 Spec</div><div class="card-text">bugfix.md 记录根因分析和修复方案</div></div>
     </div>
-    <div class="fade-up delay-3"><div class="bottom-note">我们项目已有 <strong style="color:var(--purple)">8 个 Spec</strong></div></div>
+    <div class="fade-up delay-3"><div class="bottom-note">我们项目已有 <strong style="color:var(--purple)">9 个 Spec</strong></div></div>
   </div>
-  <span class="slide-number">07 / 13</span>
+  <span class="slide-number">08 / 14</span>
 </section>
 
-<!-- ===== SLIDE 8: Hooks 实战 ===== -->
-<section class="slide slide--radial-orange" id="slide-8">
+<!-- ===== SLIDE 9: Hooks 实战 ===== -->
+<section class="slide slide--radial-orange" id="slide-9">
   <div class="slide-content">
     <div class="fade-up"><span class="tag tag--orange">Hooks 实战</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">自动化的安全护栏与代码审查</h2></div>
@@ -268,11 +299,11 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-3"><div class="bottom-note">Hooks = 把 Code Review 的经验编码成<strong style="color:var(--orange)">自动化规则</strong></div></div>
   </div>
-  <span class="slide-number">08 / 13</span>
+  <span class="slide-number">09 / 14</span>
 </section>
 
-<!-- ===== SLIDE 9: 两种工作模式 ===== -->
-<section class="slide slide--radial" id="slide-9">
+<!-- ===== SLIDE 10: 两种工作模式 ===== -->
+<section class="slide slide--radial" id="slide-10">
   <div class="slide-content">
     <div class="fade-up"><span class="tag">工作模式</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">两种工作模式</h2></div>
@@ -290,11 +321,11 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-3"><div class="bottom-note bottom-note--highlight">💡 小事 Vibe，大事 Spec</div></div>
   </div>
-  <span class="slide-number">09 / 13</span>
+  <span class="slide-number">10 / 14</span>
 </section>
 
-<!-- ===== SLIDE 10: 横向对比 ===== -->
-<section class="slide slide--grid" id="slide-10">
+<!-- ===== SLIDE 11: 横向对比 ===== -->
+<section class="slide slide--grid" id="slide-11">
   <div class="slide-content">
     <div class="fade-up"><span class="tag">横向对比</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">Kiro vs Cursor vs Copilot</h2></div>
@@ -313,11 +344,11 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-3"><div class="bottom-note">Kiro 的优势在<strong style="color:var(--blue)">团队协作</strong>和<strong style="color:var(--blue)">生产级项目</strong></div></div>
   </div>
-  <span class="slide-number">10 / 13</span>
+  <span class="slide-number">11 / 14</span>
 </section>
 
-<!-- ===== SLIDE 11: 踩坑经验 ===== -->
-<section class="slide slide--radial-red" id="slide-11">
+<!-- ===== SLIDE 12: 踩坑经验 ===== -->
+<section class="slide slide--radial-red" id="slide-12">
   <div class="slide-content">
     <div class="fade-up"><span class="tag tag--red">踩坑经验</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">两个月使用的真实体会</h2></div>
@@ -343,11 +374,11 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
     </div>
     <div class="fade-up delay-3"><div class="bottom-note" style="color:rgba(248,113,113,0.7)">⬆️ 这页需要你填入真实的踩坑经验</div></div>
   </div>
-  <span class="slide-number">11 / 13</span>
+  <span class="slide-number">12 / 14</span>
 </section>
 
-<!-- ===== SLIDE 12: 团队落地建议 ===== -->
-<section class="slide slide--radial-green" id="slide-12">
+<!-- ===== SLIDE 13: 团队落地建议 ===== -->
+<section class="slide slide--radial-green" id="slide-13">
   <div class="slide-content">
     <div class="fade-up"><span class="tag tag--green">落地建议</span></div>
     <div class="fade-up delay-1"><h2 class="section-title">团队落地建议</h2></div>
@@ -369,11 +400,11 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
       </ul>
     </div>
   </div>
-  <span class="slide-number">12 / 13</span>
+  <span class="slide-number">13 / 14</span>
 </section>
 
-<!-- ===== SLIDE 13: 总结 ===== -->
-<section class="slide slide--radial" id="slide-13">
+<!-- ===== SLIDE 14: 总结 ===== -->
+<section class="slide slide--radial" id="slide-14">
   <div class="slide-content" style="text-align:center">
     <div class="fade-up"><span class="tag">总结</span></div>
     <div class="fade-up delay-1">
@@ -390,7 +421,7 @@ th.col-highlight{background:rgba(56,189,248,0.12);color:var(--blue)}
       <p style="font-size:clamp(1rem,1.5vw,1.2rem);color:var(--text-dim)">🔗 <a href="https://kiro.dev" style="color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(56,189,248,0.3)" target="_blank">kiro.dev</a> &nbsp;·&nbsp; 💬 Q&amp;A 时间</p>
     </div>
   </div>
-  <span class="slide-number">13 / 13</span>
+  <span class="slide-number">14 / 14</span>
 </section>
 
 <script>
